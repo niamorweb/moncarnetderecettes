@@ -30,10 +30,7 @@ export default function ViewRecipeClient({ recipe }: { recipe: Recipe }) {
             <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-neutral-100 lg:sticky lg:top-12">
               <div className="relative aspect-[4/3] overflow-hidden rounded-3xl mb-8 bg-neutral-100 shadow-inner">
                 <Image
-                  src={
-                    recipe.image_url ||
-                    "https://images.unsplash.com/photo-1546548970-71785318a17b?q=80&w=2000"
-                  }
+                  src={recipe.image_url || "/images/illustration.jpeg"}
                   alt={recipe.title}
                   fill
                   className="object-cover"

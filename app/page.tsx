@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import Button from "@/components/ui/button";
 
 export default function HomePage() {
   const [isVisible, setIsVisible] = useState(false);
@@ -74,22 +75,16 @@ export default function HomePage() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4">
-            <Link
-              href="/signup"
-              className="group flex items-center justify-center gap-2 px-8 py-4 bg-neutral-900 text-white font-bold rounded-2xl hover:bg-neutral-800 transition-all shadow-xl shadow-neutral-200 hover:-translate-y-1"
-            >
+            <Button size="lg" href="/signup">
               Commencer gratuitement
               <ChevronRight
                 className="group-hover:translate-x-1 transition-transform"
                 size={20}
               />
-            </Link>
-            <Link
-              href="/public/test"
-              className="flex items-center justify-center gap-2 px-8 py-4 bg-white border border-neutral-200 text-neutral-900 font-bold rounded-2xl hover:bg-neutral-50 transition-all"
-            >
-              Découvrir des exemples
-            </Link>
+            </Button>
+            <Button size="lg" variant="outline" href="/public/test">
+              Découvrir un exemple
+            </Button>
           </div>
 
           {/* Social Proof */}
@@ -126,7 +121,7 @@ export default function HomePage() {
           <div className="relative z-10 bg-white p-4 rounded-[2.5rem] shadow-2xl border border-neutral-200 transform rotate-2 hover:rotate-0 transition-transform duration-500">
             <div className="relative rounded-[2rem] overflow-hidden w-full h-[500px]">
               <Image
-                src="https://images.unsplash.com/photo-1547592166-23ac45744acd?q=80&w=1000"
+                src="/images/hero.webp"
                 alt="Recette mockup"
                 fill
                 className="object-cover"
@@ -219,7 +214,7 @@ export default function HomePage() {
             <div className="p-5 bg-neutral-900 rounded-2xl inline-flex items-center gap-3 text-white shadow-xl">
               <Share2 size={18} className="text-orange-400" />
               <span className="text-sm font-mono font-bold">
-                moncarnet.app/votre-nom
+                moncarnetderecettes.vercel.app/votre-nom
               </span>
             </div>
           </div>
@@ -248,7 +243,7 @@ export default function HomePage() {
           <div className="flex-1 order-2 md:order-1 relative">
             <div className="relative w-full aspect-video rounded-[2.5rem] overflow-hidden shadow-2xl">
               <Image
-                src="https://images.unsplash.com/photo-1589998059171-988d887df646?q=80&w=1000"
+                src="/images/book.webp"
                 fill
                 className="object-cover opacity-90"
                 alt="Livre"
@@ -267,10 +262,10 @@ export default function HomePage() {
               meilleures recettes et commandez votre livre physique de haute
               qualité. Parfait pour offrir ou pour votre bibliothèque.
             </p>
-            <button className="flex items-center gap-3 px-8 py-4 border-2 border-neutral-900 rounded-2xl font-black hover:bg-neutral-900 hover:text-white transition-all active:scale-95 shadow-lg">
+            <Button variant="outline" size="lg">
               <Printer size={20} />
               Simuler mon livre
-            </button>
+            </Button>
           </div>
         </section>
       </div>

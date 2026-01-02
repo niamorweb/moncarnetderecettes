@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { User } from "@supabase/supabase-js";
 import Button from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 interface ProfileClientProps {
   user: User;
@@ -37,6 +38,7 @@ export default function ProfileClient({
 }: ProfileClientProps) {
   const supabase = createClient();
 
+  const router = useRouter();
   // Profil
   const [username, setUsername] = useState(initialData.username);
   const [publicName, setPublicName] = useState(initialData.public_name);
@@ -114,13 +116,27 @@ export default function ProfileClient({
     }
   };
 
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    router.refresh();
+    router.push("/");
+  };
+
   return (
     <div className="min-h-screen bg-neutral-50">
       <div className="p-6 md:p-12 max-w-4xl mx-auto">
-        <Button href="/dashboard" variant="ghost">
-          <ChevronLeft size={14} />
-          Retour aux recettes
-        </Button>
+        <div className="flex items-center gap-3 justify-between">
+          <Button href="/dashboard" variant="ghost">
+            <ChevronLeft size={14} />
+            Retour aux recettes
+          </Button>
+          <Button
+            className="bg-red-50 hover:bg-red-100 border-red-300 border !text-red-600"
+            onClick={() => handleSignOut()}
+          >
+            Me déconnecter
+          </Button>
+        </div>
 
         <h1 className="text-4xl mt-6 font-black mb-10 text-neutral-900 tracking-tight">
           Mon Compte

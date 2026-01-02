@@ -3,13 +3,13 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { createClient } from "@supabase/supabase-js";
 import { BookOpen, Mail, Lock, AlertCircle, Loader2 } from "lucide-react";
 
 // Library imports pour les formulaires
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { createClient } from "@/lib/supabase/client";
 
 // 1. Définition du schéma de validation avec Zod
 const signupSchema = z.object({
@@ -24,18 +24,13 @@ const signupSchema = z.object({
 // Extraction du type TypeScript à partir du schéma
 type SignupFormValues = z.infer<typeof signupSchema>;
 
-// Configuration Supabase
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
-
 export default function SignupPage() {
   const [serverError, setServerError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const router = useRouter();
 
+  const supabase = createClient();
   // 2. Initialisation de React Hook Form
   const {
     register,

@@ -126,10 +126,7 @@ function PublicRecipeCard({
     >
       <div className="relative h-52 overflow-hidden bg-neutral-100">
         <Image
-          src={
-            recipe.image_url ||
-            "https://images.unsplash.com/photo-1546548970-71785318a17b?q=80&w=800"
-          }
+          src={recipe.image_url || "/images/illustration.jpeg"}
           alt={recipe.title}
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"

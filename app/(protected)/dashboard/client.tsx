@@ -75,10 +75,7 @@ const RecipeCard = ({
       {/* 2. VISUELS (Image + Overlay) */}
       <div className="relative h-52 overflow-hidden">
         <Image
-          src={
-            recipe.image_url ||
-            "https://images.unsplash.com/photo-1546548970-71785318a17b?q=80&w=800"
-          }
+          src={recipe.image_url || "/images/illustration.jpeg"}
           alt={recipe.title}
           fill
           className={`object-cover transition-transform duration-700 group-hover:scale-110 ${
