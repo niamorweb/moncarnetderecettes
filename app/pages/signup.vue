@@ -91,7 +91,9 @@ const handleSignup = async () => {
     auth.setAuth(res.accessToken, res.user);
 
     // Redirection
-    await router.push("/confirm-your-email?email=" + formData.email);
+
+    // await router.push("/confirm-your-email?email=" + formData.email);
+    await router.push("/dashboard");
   } catch (err: any) {
     serverError.value =
       err?.data?.message || err?.message || "Une erreur est survenue.";

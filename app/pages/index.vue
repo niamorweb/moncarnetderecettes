@@ -513,18 +513,6 @@ onMounted(() => {
         <p class="text-neutral-500 text-sm font-medium">
           © {{ new Date().getFullYear() }} — Cuisiné avec amour.
         </p>
-        <div class="flex gap-6">
-          <a
-            href="#"
-            class="text-neutral-400 hover:text-orange-600 transition-colors"
-            ><Twitter :size="20"
-          /></a>
-          <a
-            href="#"
-            class="text-neutral-400 hover:text-orange-600 transition-colors"
-            ><Instagram :size="20"
-          /></a>
-        </div>
       </div>
     </footer>
   </div>
