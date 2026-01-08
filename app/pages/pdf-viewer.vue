@@ -17,15 +17,12 @@ import html2canvas from "html2canvas";
 import type { Category } from "~/types/models/category";
 import type { Recipe } from "~/types/models/recipe";
 
-// 1. Outils Nuxt & Auth
 const { $api } = useNuxtApp() as any;
 const authStore = useAuthStore();
 
-// 2. Récupération des données depuis NestJS
-// On récupère toutes les recettes pour construire le livre
 const auth = useAuthStore();
 const config = useRuntimeConfig();
-const apiBase = config.public.apiBase; // Assure-toi que c'est défini dans ton nuxt.config
+const apiBase = config.public.apiBase;
 
 const recipes = ref<Recipe[]>([]);
 const categories = ref<Category[]>([]);
@@ -60,40 +57,28 @@ onMounted(() => {
   console.log("ath2 ;", authStore.user);
 });
 
-// 3. État Réactif
-// On initialise avec les données reçues ou un tableau vide
 const activeRecipe = ref<Recipe | null>(recipes.value[0] || null);
 const searchTerm = ref("");
 const isGenerating = ref(false);
 const isSidebarOpen = ref(false);
 const printContainerRef = ref<HTMLElement | null>(null);
 
-// Synchronisation si les données arrivent après le montage
-// watch(recipes, (newData) => {
-//   if (newData) {
-//     recipes.value = [...newData];
-//     if (!activeRecipe.value) activeRecipe.value = newData[0];
-//   }
-// });
-
-// 4. Logique de Tri (Manuel via flèches)
 const move = (index: number, direction: number) => {
   const newIndex = index + direction;
   if (newIndex < 0 || newIndex >= recipes.value.length) return;
   const items = [...recipes.value];
   const [removed] = items.splice(index, 1);
+  // @ts-ignore
   items.splice(newIndex, 0, removed);
   recipes.value = items;
 };
 
-// 5. Filtrage pour la barre latérale
 const filteredRecipes = computed(() => {
   return recipes.value.filter((r) =>
     r.name.toLowerCase().includes(searchTerm.value.toLowerCase())
   );
 });
 
-// 6. Génération PDF (Logique inchangée, utilise html2canvas)
 const generatePDF = async () => {
   if (!printContainerRef.value) return;
   isGenerating.value = true;
@@ -109,9 +94,9 @@ const generatePDF = async () => {
     for (let i = 0; i < elements.length; i++) {
       const canvas = await html2canvas(elements[i] as HTMLElement, {
         scale: 2,
-        useCORS: true, // Crucial pour les images venant de ton backend/Cloudinary
+        useCORS: true,
         backgroundColor: "#ffffff",
-        width: 559, // Ratio A5
+        width: 559,
         height: 794,
       });
       const imgData = canvas.toDataURL("image/jpeg", 0.9);
@@ -196,6 +181,7 @@ const generatePDF = async () => {
               <button
                 @click="
                   activeRecipe = recipe;
+                  // @ts-ignore
                   if (typeof window !== 'undefined' && window.innerWidth < 1024)
                     isSidebarOpen = false;
                 "

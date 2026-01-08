@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Utensils, ChefHat } from "lucide-vue-next";
-import type { Recipe } from "@/types/recipe";
+import type { Recipe } from "@/types/models/recipe";
 
 interface Props {
   recipe: Recipe | null;
@@ -16,7 +16,6 @@ const colors = {
   accent: "#fff7ed",
 };
 
-// Paramètres de mise en page fixes pour le format A5
 const stepFontSize = "12px";
 const stepGap = "12px";
 const imageHeight = "180px";
@@ -92,7 +91,7 @@ const imageHeight = "180px";
               marginBottom: '4px',
             }"
           >
-            {{ recipe.category_name || "Recette Maison" }}
+            {{ recipe.category?.name || "Recette Maison" }}
           </span>
           <h1
             :style="{

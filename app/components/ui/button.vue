@@ -66,7 +66,9 @@ const variantStyles = {
 const computedClasses = computed(() => {
   return [
     baseStyles,
+    // @ts-ignore
     props.type === "icon" ? iconSizeStyles[props.size] : sizeStyles[props.size],
+    // @ts-ignore
     props.type === "icon" && "aspect-square p-0",
     variantStyles[props.variant],
     props.className,

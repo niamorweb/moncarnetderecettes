@@ -2,10 +2,10 @@
 import { Loader2, CheckCircle2, XCircle, ArrowRight } from "lucide-vue-next";
 
 const route = useRoute();
-const router = useRouter();
 const config = useRuntimeConfig();
 const apiBase = config.public.apiBase;
 const auth = useAuthStore();
+
 // États pour gérer l'affichage
 const status = ref<"loading" | "success" | "error">("loading");
 const message = ref("Vérification en cours...");
@@ -13,7 +13,7 @@ const message = ref("Vérification en cours...");
 onMounted(async () => {
   const token = route.query.token as string;
 
-  // 1. Si pas de token dans l'URL
+  //  Si pas de token dans l'URL
   if (!token) {
     status.value = "error";
     message.value = "Jeton de vérification manquant.";
@@ -21,8 +21,7 @@ onMounted(async () => {
   }
 
   try {
-    // 2. Appel au backend pour valider le token
-    // L'URL backend correspond à @Controller('auth') + @Get('verify')
+    //  Appel au backend pour valider le token
     const response = await $fetch<any>("/auth/verify", {
       baseURL: apiBase,
       method: "GET",
@@ -30,20 +29,15 @@ onMounted(async () => {
       credentials: "include",
     });
 
-    console.log("response ;; ", response);
-
     auth.setAuth(response.access_token, response.user);
 
-    // 3. Succès
     status.value = "success";
     message.value = response.message || "Email vérifié avec succès !";
 
-    // 4. Redirection automatique vers le Dashboard après 2 secondes
     setTimeout(() => {
       navigateTo("/dashboard");
     }, 2000);
   } catch (error: any) {
-    // 5. Erreur (Token invalide, expiré, ou déjà utilisé)
     status.value = "error";
     message.value = error.data?.message || "Le lien est invalide ou a expiré.";
   }

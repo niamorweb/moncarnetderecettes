@@ -8,12 +8,10 @@ import {
 } from "lucide-vue-next";
 import * as z from "zod";
 
-// --- Validation ---
 const forgotPasswordSchema = z.object({
   email: z.string().email("Format d'email invalide"),
 });
 
-// --- State & Tools ---
 const { $api } = useNuxtApp() as any;
 const config = useRuntimeConfig();
 
@@ -28,12 +26,10 @@ const formData = reactive({
 
 const errors = ref<Record<string, string>>({});
 
-// --- Lifecycle ---
 onMounted(() => {
   isVisible.value = true;
 });
 
-// --- Logic ---
 const handleForgotPassword = async () => {
   serverError.value = null;
   successMessage.value = null;
@@ -42,6 +38,7 @@ const handleForgotPassword = async () => {
   const result = forgotPasswordSchema.safeParse(formData);
   if (!result.success) {
     result.error.issues.forEach((issue) => {
+      // @ts-ignore
       errors.value[issue.path[0]] = issue.message;
     });
     return;
@@ -50,7 +47,6 @@ const handleForgotPassword = async () => {
   loading.value = true;
 
   try {
-    // 🚀 Appel à ton backend NestJS
     await $api("/auth/forgot-password", {
       method: "POST",
       body: {
@@ -61,7 +57,6 @@ const handleForgotPassword = async () => {
     successMessage.value =
       "Un email de réinitialisation vient de vous être envoyé si votre compte existe.";
   } catch (err: any) {
-    // On reste flou sur l'erreur pour la sécurité (ne pas confirmer si un mail existe ou non)
     serverError.value = "Une erreur est survenue lors de l'envoi de l'email.";
     console.error("Forgot password error:", err);
   } finally {

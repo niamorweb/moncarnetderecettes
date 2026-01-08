@@ -10,13 +10,11 @@ import {
   Sparkles,
 } from "lucide-vue-next";
 
-// 1. Paramètres Nuxt & Route
 const route = useRoute();
 const username = route.params.username as string;
 const config = useRuntimeConfig();
 const apiBase = config.public.apiBase;
 
-// 2. Fetch Data
 const {
   data: pageData,
   error: fetchError,
@@ -26,7 +24,6 @@ const {
   lazy: true,
 });
 
-// 3. Gestion 404
 watch(
   status,
   (newStatus) => {
@@ -41,7 +38,6 @@ watch(
   { immediate: true }
 );
 
-// 4. Filtrage & Recherche
 const selectedCategory = ref<string | null>(null);
 const searchQuery = ref("");
 
@@ -50,12 +46,10 @@ const filteredRecipes = computed(() => {
 
   let result = pageData.value.recipes;
 
-  // Filtre Catégorie
   if (selectedCategory.value) {
     result = result.filter((r: any) => r.categoryId === selectedCategory.value);
   }
 
-  // Filtre Recherche
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase();
     result = result.filter((r: any) =>
@@ -82,7 +76,6 @@ useSeoMeta({
     pageData.value?.recipes?.[0]?.image_url || "/images/og-default.jpg",
 });
 
-// État pour déclencher l'animation d'entrée CSS
 const isMounted = ref(false);
 onMounted(() => {
   setTimeout(() => (isMounted.value = true), 100);
@@ -361,9 +354,6 @@ onMounted(() => {
   scrollbar-width: none;
 }
 
-/* MOTION DESIGN (TransitionGroup) */
-
-/* 1. Animation d'entrée initiale et liste */
 .recipe-grid-enter-active,
 .recipe-grid-leave-active {
   transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
@@ -375,23 +365,18 @@ onMounted(() => {
   transform: translateY(30px) scale(0.95);
 }
 
-/* 2. Le "Move" : Permet aux éléments de glisser fluidement quand un voisin disparaît */
 .recipe-grid-move {
   transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-/* 3. Absolute position pour leave : évite le saut brusque lors de la suppression */
 .recipe-grid-leave-active {
   position: absolute;
-  /* Note: Cela peut casser la layout grid parfois, si c'est le cas, retirer absolute */
 }
 
-/* Stagger effect via CSS delay var */
 .recipe-grid-enter-active {
   transition-delay: var(--delay);
 }
 
-/* Simple fade in */
 @keyframes fadeIn {
   from {
     opacity: 0;

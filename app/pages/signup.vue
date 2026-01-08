@@ -3,7 +3,6 @@ import { BookOpen, Mail, Lock, AlertCircle, Loader2 } from "lucide-vue-next";
 import * as z from "zod";
 import { useAuthStore } from "~/stores/auth";
 
-// --- 1. Schéma Zod ---
 const signupSchema = z.object({
   email: z.string().email("Format d'email invalide"),
   password: z
@@ -19,7 +18,6 @@ const signupSchema = z.object({
     ),
 });
 
-// --- 2. États & Composables ---
 const router = useRouter();
 const auth = useAuthStore();
 
@@ -35,12 +33,10 @@ const formData = reactive({
 
 const errors = ref<Record<string, string>>({});
 
-// --- 3. Animation ---
 onMounted(() => {
   isVisible.value = true;
 });
 
-// --- 4. Typage DTO ---
 interface UserDto {
   id: string;
   email: string;
@@ -55,13 +51,10 @@ interface SignupResponseDto {
   user: UserDto;
 }
 
-// --- 5. Fonction Signup ---
 const handleSignup = async () => {
-  // Reset
   serverError.value = null;
   errors.value = {};
 
-  // Validation
   const result = signupSchema.safeParse(formData);
   if (!result.success) {
     result.error.issues.forEach((issue) => {
@@ -76,10 +69,10 @@ const handleSignup = async () => {
     const config = useRuntimeConfig();
     const apiBase = config.public.apiBase as string;
 
-    const res = await $fetch<SignupResponseDto>("/auth/register", {
+    const res = await $fetch<any>("/auth/register", {
       method: "POST",
       baseURL: apiBase,
-      credentials: "include", // pour refresh token
+      credentials: "include",
       body: {
         email: formData.email.trim(),
         password: formData.password,
@@ -88,12 +81,10 @@ const handleSignup = async () => {
     });
 
     // Stockage Pinia
-    auth.setAuth(res.accessToken, res.user);
-
-    // Redirection
+    auth.setAuth(res.access_token, res.user);
 
     // await router.push("/confirm-your-email?email=" + formData.email);
-    await router.push("/dashboard");
+    await navigateTo("/dashboard");
   } catch (err: any) {
     serverError.value =
       err?.data?.message || err?.message || "Une erreur est survenue.";

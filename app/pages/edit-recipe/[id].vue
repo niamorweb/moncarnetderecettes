@@ -5,65 +5,38 @@ import type { Recipe } from "~/types/models/recipe";
 
 import { z } from "zod";
 
-// 1. Outils Nuxt
-
 const route = useRoute();
-
 const router = useRouter();
-
 const { $api } = useNuxtApp() as any;
-
 const recipeId = route.params.id as string;
-
 const auth = useAuthStore();
-
-const recipe = ref<Recipe | null>(null); // Typage plus précis (objet ou null, pas tableau)
-
+const recipe = ref<Recipe | null>(null);
 const config = useRuntimeConfig();
-
 const apiBase = config.public.apiBase;
 
-// 2. État du formulaire
-
 const loading = ref(false);
-
 const submitting = ref(false);
-
 const error = ref<string | null>(null);
-
 const fieldErrors = ref<Record<string, string>>({}); // Stockage des erreurs Zod
-
 const imageFile = ref<File | null>(null);
 
 const recipeData = reactive({
   name: "",
-
   prep_time: "" as string | number,
-
   cook_time: "" as string | number,
-
   servings: "" as string | number,
-
   ingredients: [""] as string[],
-
   steps: [""] as string[],
-
   initialImageUrl: null as string | null,
-
   categoryId: null as string | null,
 });
-
-// 3. Chargement des données
 
 const loadRecipeData = async () => {
   try {
     const data = await $fetch<Recipe>(`/recipes/${recipeId}`, {
       baseURL: apiBase,
-
       method: "GET",
-
       headers: { Authorization: `Bearer ${auth.accessToken}` },
-
       credentials: "include",
     });
 
@@ -71,26 +44,18 @@ const loadRecipeData = async () => {
 
     if (data) {
       recipeData.name = data.name || "";
-
       recipeData.prep_time = data.prep_time || "";
-
       recipeData.cook_time = data.cook_time || "";
-
       recipeData.servings = data.servings || "";
-
       recipeData.ingredients = data.ingredients?.length
         ? [...data.ingredients]
         : [""];
-
       recipeData.steps = data.steps?.length ? [...data.steps] : [""];
-
       recipeData.categoryId = data.categoryId || null;
-
       recipeData.initialImageUrl = data.image_url || null;
     }
   } catch (err) {
     console.error("Erreur lors du fetch : ", err);
-
     error.value = "Impossible de charger la recette.";
   }
 };
@@ -103,50 +68,28 @@ onMounted(() => {
 
 const recipeSchema = z.object({
   name: z.string().min(3, "Le titre doit faire au moins 3 caractères"),
-
-  // Coerce transforme "15" (string) en 15 (number) automatiquement
-
   prep_time: z.coerce.number({ message: "Requis" }).min(1, "Temps requis"),
-
   cook_time: z.coerce.number().optional(),
-
   servings: z.coerce.number({ message: "Requis" }).min(1, "Au moins 1 pers."),
-
-  // Validation des tableaux : on filtre les vides, puis on vérifie qu'il en reste au moins 1
-
   ingredients: z
-
     .array(z.string())
-
     .transform((arr) => arr.filter((s) => s.trim() !== ""))
-
     .refine((arr) => arr.length > 0, "Il faut au moins un ingrédient"),
-
   steps: z
-
     .array(z.string())
-
     .transform((arr) => arr.filter((s) => s.trim() !== ""))
-
     .refine((arr) => arr.length > 0, "Il faut au moins une étape"),
-
   // Image optionnelle en édition (on valide le type seulement si un fichier est uploadé)
-
   image: z
-
     .custom<File | null>()
-
     .refine((file) => {
       if (!file) return true; // Pas de nouveau fichier = OK
-
       return ["image/png", "image/jpeg", "image/jpg", "image/webp"].includes(
         file.type
       );
     }, "Format invalide (.png, .jpg, .webp)")
-
     .refine((file) => {
       if (!file) return true;
-
       return file.size <= 5 * 1024 * 1024;
     }, "L'image ne doit pas dépasser 5 Mo"),
 });
@@ -155,7 +98,6 @@ const recipeSchema = z.object({
 
 const imagePreview = computed(() => {
   if (imageFile.value) return URL.createObjectURL(imageFile.value);
-
   return recipeData.initialImageUrl;
 });
 
@@ -166,7 +108,6 @@ const handleImageChange = (e: Event) => {
 
   if (target.files?.[0]) {
     imageFile.value = target.files[0];
-
     delete fieldErrors.value.image; // Reset erreur visuelle
   }
 };
@@ -179,57 +120,38 @@ const handleRemove = (type: "ingredients" | "steps", index: number) => {
   recipeData[type] = recipeData[type].filter((_, i) => i !== index);
 
   if (recipeData[type].length === 0) recipeData[type] = [""];
-
-  // Si on supprime, on efface l'erreur potentielle sur la liste
-
   delete fieldErrors.value[type];
 };
 
-// 7. Soumission
-
 const handleSubmit = async () => {
-  // 1. Reset
-
   fieldErrors.value = {};
-
   error.value = null;
-
-  // 2. Validation Zod
-
   const payloadToValidate = {
     ...recipeData,
-
     image: imageFile.value,
   };
-
   const validation = recipeSchema.safeParse(payloadToValidate);
 
   if (!validation.success) {
-    // Mappage des erreurs pour l'affichage
-
     const formattedErrors = validation.error.flatten().fieldErrors;
 
     for (const field in formattedErrors) {
+      // @ts-ignore
       if (formattedErrors[field]) {
+        // @ts-ignore
         fieldErrors.value[field] = formattedErrors[field]![0];
       }
     }
 
     window.scrollTo({ top: 0, behavior: "smooth" });
-
     return;
   }
-
-  // 3. Envoi
 
   submitting.value = true;
 
   try {
     const formData = new FormData();
-
     formData.append("name", recipeData.name);
-
-    // Ajout conditionnel des nombres (convertis en string)
 
     if (recipeData.servings)
       formData.append("servings", recipeData.servings.toString());
@@ -243,18 +165,12 @@ const handleSubmit = async () => {
     if (recipeData.categoryId)
       formData.append("categoryId", recipeData.categoryId);
 
-    // On utilise les tableaux filtrés par Zod ou on refiltre manuellement pour être sûr
-
     recipeData.ingredients
-
       .filter((i) => i.trim())
-
       .forEach((ing) => formData.append("ingredients[]", ing));
 
     recipeData.steps
-
       .filter((s) => s.trim())
-
       .forEach((step) => formData.append("steps[]", step));
 
     if (imageFile.value) {
@@ -263,33 +179,22 @@ const handleSubmit = async () => {
 
     await $fetch<Recipe>(`/recipes/${recipeId}`, {
       baseURL: apiBase,
-
       method: "PATCH",
-
       headers: { Authorization: `Bearer ${auth.accessToken}` },
-
       credentials: "include",
-
       body: formData,
     });
 
     router.push("/dashboard");
   } catch (err: any) {
-    // Gestion des erreurs backend (NestJS renvoie parfois un tableau de messages)
-
     const backendMsg = err.data?.message;
 
     if (Array.isArray(backendMsg)) {
-      // On essaye de mapper les erreurs backend aux champs si possible
-
       error.value = "Veuillez corriger les erreurs indiquées.";
-
       backendMsg.forEach((msg: string) => {
         if (msg.includes("name")) fieldErrors.value.name = msg;
 
         if (msg.includes("prep_time")) fieldErrors.value.prep_time = msg;
-
-        // etc...
       });
     } else {
       error.value = backendMsg || "Erreur lors de la sauvegarde";
@@ -300,8 +205,6 @@ const handleSubmit = async () => {
     submitting.value = false;
   }
 };
-
-// Helper pour le style des inputs
 
 const getInputClass = (fieldName: string) => {
   const base =

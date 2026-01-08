@@ -3,18 +3,11 @@ import { ChevronLeft, Utensils, ChefHat, Pen } from "lucide-vue-next";
 
 import type { Recipe } from "~/types/models/recipe";
 
-// 1. Outils Nuxt
-
 const route = useRoute();
-
 const { $api } = useNuxtApp() as any;
-
 const recipeId = route.params.id as string;
-
 const auth = useAuthStore();
-
 const config = useRuntimeConfig();
-
 const modalConfig = reactive({
   isOpen: false,
   type: null as "recipe" | "category" | null,
@@ -23,35 +16,26 @@ const modalConfig = reactive({
   description: "",
 });
 
-// 2. Fetch des données via ton Backend NestJS
-
 const { data: recipe, error: fetchError } = await useAsyncData<Recipe>(
   `recipe-view-${recipeId}`,
 
   () =>
     $fetch<Recipe>(`/recipes/${recipeId}`, {
       method: "GET",
-
       baseURL: config.public.apiBase,
-
       headers: {
         Authorization: `Bearer ${auth.accessToken}`,
       },
-
       credentials: "include",
     })
 );
 
-// Gestion de l'erreur 404 ou autre
-
 if (fetchError.value || !recipe.value) {
   throw createError({
     statusCode: 404,
-
     statusMessage:
       "Cette recette semble s'être envolée vers d'autres cuisines.",
-
-    fatal: true, // Nécessaire pour afficher la page d'erreur Nuxt en SSR
+    fatal: true,
   });
 }
 
@@ -59,9 +43,7 @@ const handleDeleteCategory = async (recipeId: string) => {
   try {
     await $fetch<Recipe>(`/recipes/${recipeId}`, {
       method: "DELETE",
-
       baseURL: config.public.apiBase,
-
       headers: {
         Authorization: `Bearer ${auth.accessToken}`,
       },
@@ -77,11 +59,8 @@ const handleDeleteCategory = async (recipeId: string) => {
 
 const openDeleteModal = (id: string) => {
   modalConfig.isOpen = true;
-
   modalConfig.data = id;
-
   modalConfig.title = "Supprimer cette recette ?";
-
   modalConfig.description =
     "Cette action est irréversible et supprimera définitivement la recette.";
 };

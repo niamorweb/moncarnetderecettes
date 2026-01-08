@@ -6,17 +6,14 @@ const config = useRuntimeConfig();
 
 const email = computed(() => route.query.email as string);
 
-// États
 const loading = ref(false);
 const sent = ref(false);
 const errorMsg = ref("");
-const cooldown = ref(0); // Le temps restant en secondes
-let timerInterval: any = null; // Pour stocker l'intervalle et le nettoyer
+const cooldown = ref(0);
+let timerInterval: any = null;
 
-// Fonction pour démarrer le compte à rebours
 const startCooldown = (seconds: number) => {
   cooldown.value = seconds;
-  // On nettoie un éventuel ancien intervalle
   if (timerInterval) clearInterval(timerInterval);
 
   timerInterval = setInterval(() => {
@@ -28,13 +25,11 @@ const startCooldown = (seconds: number) => {
   }, 1000);
 };
 
-// Nettoyage si l'utilisateur quitte la page
 onUnmounted(() => {
   if (timerInterval) clearInterval(timerInterval);
 });
 
 const handleResend = async () => {
-  // On bloque si : pas d'email, déjà en chargement, ou cooldown actif
   if (!email.value || loading.value || cooldown.value > 0) return;
 
   loading.value = true;
@@ -48,10 +43,8 @@ const handleResend = async () => {
     });
 
     sent.value = true;
-    // On lance le timer de 20 secondes
     startCooldown(20);
 
-    // On cache le message de succès après 5 secondes (indépendant du cooldown)
     setTimeout(() => (sent.value = false), 5000);
   } catch (err: any) {
     errorMsg.value = err.data?.message || "Une erreur est survenue.";

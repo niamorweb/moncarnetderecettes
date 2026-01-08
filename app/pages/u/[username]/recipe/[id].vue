@@ -12,14 +12,12 @@ import {
 } from "lucide-vue-next";
 import type { Recipe } from "~/types/models/recipe";
 
-// 1. Outils Nuxt
 const route = useRoute();
 const username = route.params.username as string;
 const recipeId = route.params.id as string;
 const config = useRuntimeConfig();
 const apiBase = config.public.apiBase;
 
-// 2. Fetch des données (Lazy + Status)
 const {
   data: recipe,
   error: fetchError,
@@ -29,7 +27,6 @@ const {
   lazy: true,
 });
 
-// 3. Gestion 404
 watch(
   status,
   (newStatus) => {
@@ -44,8 +41,6 @@ watch(
   { immediate: true }
 );
 
-// 4. Feature UX : Checklist Ingrédients
-// Permet à l'utilisateur de cocher les ingrédients au fur et à mesure
 const checkedIngredients = ref<Set<number>>(new Set());
 const toggleIngredient = (index: number) => {
   if (checkedIngredients.value.has(index)) {
@@ -55,7 +50,6 @@ const toggleIngredient = (index: number) => {
   }
 };
 
-// 5. SEO Dynamique
 useSeoMeta({
   title: () =>
     recipe.value
@@ -308,6 +302,6 @@ useSeoMeta({
 
 .animate-fade-in-up {
   animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  opacity: 0; /* Important pour que ça ne flash pas avant l'anim */
+  opacity: 0;
 }
 </style>

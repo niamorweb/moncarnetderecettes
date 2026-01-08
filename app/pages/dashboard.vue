@@ -14,28 +14,19 @@ import type { Recipe } from "~/types/models/recipe";
 
 import type { Category } from "~/types/models/category";
 
-// --- 1. CONFIGURATION & DONNÉES ---
-
 const authStore = useAuthStore();
-
-// Protection de la route (au cas où le middleware global ne suffirait pas)
 
 if (!authStore.isAuthenticated) {
   await navigateTo("/login");
 }
 
 const recipes = ref<Recipe[]>([]);
-
 const categories = ref<Category[]>([]);
-
 const loading = ref(true);
-
 const loadDashboardData = async () => {
   loading.value = true;
 
   try {
-    // Utilisation de $fetch pur sans le wrapper $api
-
     const [recipesData, categoriesData] = await Promise.all([
       $api<Recipe[]>("/recipes/all"),
 
@@ -43,12 +34,7 @@ const loadDashboardData = async () => {
     ]);
 
     recipes.value = recipesData || [];
-
     categories.value = categoriesData || [];
-
-    console.log("recipesData ::: ", recipesData);
-
-    console.log("categoriesData ::: ", categoriesData);
   } catch (err) {
     console.error("Erreur chargement dashboard:", err);
   } finally {
@@ -60,39 +46,25 @@ onMounted(() => {
   loadDashboardData();
 });
 
-// --- 2. ÉTAT RÉACTIF (Client) ---
-
 const isVisible = ref(false);
-
 const selectedRecipes = ref<string[]>([]);
-
 const isPickerModalOpen = ref(false);
-
 const selectedCategory = ref<string | null>(null);
-
 const isAddingCategory = ref(false);
-
 const newCategoryName = ref("");
-
 const isMoveMenuOpen = ref(false);
 
 const modalConfig = reactive({
   isOpen: false,
-
   type: null as "recipe" | "category" | null,
-
   data: null as string | null,
-
   title: "",
-
   description: "",
 });
 
 onMounted(() => {
   isVisible.value = true;
 });
-
-// --- 3. LOGIQUE FILTRAGE (Computed) ---
 
 const filteredRecipes = computed(() => {
   if (!recipes.value) return [];
@@ -102,8 +74,6 @@ const filteredRecipes = computed(() => {
   );
 });
 
-// --- 4. MÉTHODES (Appels API NestJS) ---
-
 const handleAddCategory = async () => {
   console.log("fefe :: ", newCategoryName.value);
 
@@ -112,14 +82,11 @@ const handleAddCategory = async () => {
   try {
     $api<Category>("/categories", {
       method: "POST",
-
       body: { name: newCategoryName.value },
     });
 
     newCategoryName.value = "";
-
     isAddingCategory.value = false;
-
     await loadDashboardData();
   } catch (err) {
     console.error("Erreur lors de l'ajout de la catégorie", err);
@@ -136,22 +103,16 @@ const handleToggleSelectedRecipe = (id: string) => {
 
 const handleMoveToCategory = async (categoryId: string | null) => {
   try {
-    // On suppose un endpoint de mise à jour en masse ou une boucle
-
     await $api("/recipes/bulk-move", {
       method: "PATCH",
-
       body: {
         recipeIds: selectedRecipes.value,
-
         categoryId: categoryId,
       },
     });
 
     selectedRecipes.value = [];
-
     isMoveMenuOpen.value = false;
-
     await loadDashboardData();
   } catch (err) {
     console.error("Erreur lors du déplacement", err);
@@ -166,7 +127,6 @@ const handleDeleteSelected = async () => {
     });
 
     selectedRecipes.value = [];
-
     await loadDashboardData();
   } catch (err) {
     console.error("Erreur lors de la suppression", err);
@@ -189,19 +149,13 @@ const handleDeleteCategory = async (categoryId: string) => {
 
 const openDeleteModal = (
   type: "recipe" | "category",
-
   id: string | null = null,
-
   name: string = ""
 ) => {
   modalConfig.isOpen = true;
-
   modalConfig.type = type;
-
   modalConfig.data = id;
-
   modalConfig.title = type === "recipe" ? "Supprimer ?" : `Supprimer ${name} ?`;
-
   modalConfig.description =
     type === "recipe"
       ? "Supprimer les recettes sélectionnées ?"

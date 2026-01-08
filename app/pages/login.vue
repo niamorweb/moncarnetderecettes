@@ -125,12 +125,6 @@ const handleLogin = async () => {
                 <label class="text-sm font-medium text-neutral-700">
                   Mot de passe
                 </label>
-                <NuxtLink
-                  to="/forgot-password"
-                  class="text-xs font-medium text-orange-600 hover:text-orange-700"
-                >
-                  Oublié ?
-                </NuxtLink>
               </div>
               <div class="relative">
                 <input

@@ -13,13 +13,11 @@ import {
   AlertCircle,
 } from "lucide-vue-next";
 
-// --- Outils et Stores ---
 const authStore = useAuthStore();
 const config = useRuntimeConfig();
 const apiBase = config.public.apiBase;
 const router = useRouter();
 
-// --- État réactif ---
 const username = ref("");
 const publicName = ref("");
 const newPassword = ref("");
@@ -37,10 +35,8 @@ const passwordStatus = ref<{ type: "error" | "success"; msg: string } | null>(
 
 watchEffect(() => console.log("public :", publicName.value));
 
-// Calcul du statut Premium depuis le store
 const isPremium = computed(() => authStore.user?.isPremium || false);
 
-// --- Chargement des données ---
 const loadProfileData = async () => {
   try {
     const data = await $fetch<any>(`/profiles/me`, {
@@ -51,10 +47,9 @@ const loadProfileData = async () => {
     });
 
     if (data) {
-      // On remplit les refs locales
       username.value = authStore.user?.username || "";
       premiumEndsAt.value = data.premiumEndsAt;
-      publicName.value = data.profile.name || ""; // Vérifie si ton champ s'appelle name ou public_name
+      publicName.value = data.profile.name || "";
     }
   } catch (err) {
     console.error("Erreur lors du fetch profil : ", err);
@@ -63,24 +58,7 @@ const loadProfileData = async () => {
 
 onMounted(() => {
   loadProfileData();
-  console.log("authh ;", authStore);
 });
-
-// --- Méthodes d'action ---
-
-const handleUpgrade = async () => {
-  loading.value = true;
-  try {
-    // Appel à ton futur endpoint Stripe
-    // const { url } = await $fetch('/stripe/create-checkout', { method: 'POST', baseURL: apiBase, headers: { Authorization: `Bearer ${authStore.accessToken}` } });
-    // window.location.href = url;
-    alert("Redirection vers le paiement (Stripe)...");
-  } catch (err) {
-    console.error(err);
-  } finally {
-    loading.value = false;
-  }
-};
 
 const handleProfileUpdate = async () => {
   loading.value = true;
@@ -88,7 +66,6 @@ const handleProfileUpdate = async () => {
 
   try {
     await $fetch("/profiles/me", {
-      // Vérifie l'URL de ton endpoint NestJS
       method: "PATCH",
       baseURL: apiBase,
       headers: { Authorization: `Bearer ${authStore.accessToken}` },
@@ -100,7 +77,6 @@ const handleProfileUpdate = async () => {
 
     profileStatus.value = { type: "success", msg: "Profil mis à jour !" };
 
-    // 🔥 Crucial : Mettre à jour le store Pinia pour que le username change partout
     authStore.user.username = username.value.trim();
   } catch (error: any) {
     profileStatus.value = {
@@ -166,19 +142,15 @@ const copyToClipboard = async () => {
 
 const isPremiumModalOpen = ref(false);
 
-// 2. Fonction pour fermer (appelée par @close)
 const handleCloseModal = () => {
   isPremiumModalOpen.value = false;
 };
 
-// 3. Fonction pour déclencher le paiement (appelée par @upgrade)
 const goToStripePayment = async () => {
-  // On peut fermer la modal et afficher un loader global
   isPremiumModalOpen.value = false;
   loading.value = true;
 
   try {
-    // On appelle ton API NestJS pour récupérer le lien Stripe
     const data = await $fetch<{ url: string }>("/webhooks/create-checkout", {
       method: "POST",
       baseURL: apiBase,
@@ -188,7 +160,6 @@ const goToStripePayment = async () => {
       credentials: "include",
     });
 
-    // Si le backend nous renvoie une URL Stripe, on y redirige l'utilisateur
     if (data.url) {
       window.location.href = data.url;
     }
@@ -200,14 +171,11 @@ const goToStripePayment = async () => {
   }
 };
 
-// 4. (Optionnel) Une fonction pour ouvrir la modal facilement
-// depuis n'importe quel bouton "Premium" de ta page
 const openPremiumModal = () => {
   isPremiumModalOpen.value = true;
 };
 
 const handleCancelSubscription = async () => {
-  // Optionnel : Ajoute une confirmation native ou une autre modal
   const confirmCancel = confirm(
     "Êtes-vous sûr de vouloir résilier votre abonnement ? Vous garderez vos accès jusqu'à la fin de la période en cours."
   );
@@ -217,7 +185,6 @@ const handleCancelSubscription = async () => {
   loading.value = true;
   try {
     await $fetch("/webhooks/cancel-subscription", {
-      // Vérifie que l'URL correspond à ton controller NestJS
       method: "POST",
       baseURL: apiBase,
       headers: {
@@ -225,17 +192,12 @@ const handleCancelSubscription = async () => {
       },
     });
 
-    // 1. Fermer la modal
     isPremiumModalOpen.value = false;
 
-    // 2. Afficher un message de succès
     profileStatus.value = {
       type: "success",
       msg: "Votre abonnement ne sera pas renouvelé. Accès maintenu jusqu'à l'échéance.",
     };
-
-    // 3. Optionnel : Rafraîchir les données utilisateur pour voir le 'premiumEndsAt'
-    // await loadProfileData();
   } catch (err: any) {
     console.error("Erreur lors de l'annulation:", err);
     alert(
@@ -246,7 +208,6 @@ const handleCancelSubscription = async () => {
   }
 };
 
-// Fonction pour formater la date
 const formatDate = (dateString: string | Date) => {
   return new Date(dateString).toLocaleDateString("fr-FR", {
     day: "numeric",
@@ -255,7 +216,6 @@ const formatDate = (dateString: string | Date) => {
   });
 };
 
-// Récupérer la date de fin depuis le store ou les données du profil
 const premiumUntil = computed(() => premiumEndsAt.value);
 </script>
 
@@ -397,14 +357,28 @@ const premiumUntil = computed(() => premiumEndsAt.value);
 
             <div class="relative group mt-4">
               <div
-                class="group relative p-4 bg-neutral-50 rounded-2xl border border-neutral-100 flex items-center justify-between gap-4 overflow-hidden transition-colors hover:border-orange-200"
+                :class="[
+                  'group relative p-4 bg-neutral-50 rounded-2xl border border-neutral-100 flex items-center justify-between gap-4 overflow-hidden transition-colors ',
+                  isPremium ? 'hover:border-orange-200' : 'cursor-not-allowed',
+                ]"
               >
                 <div class="min-w-0">
-                  <p class="text-sm font-medium text-neutral-700 mb-2">
+                  <p
+                    :class="[
+                      'text-sm font-medium mb-2',
+                      isPremium ? 'text-neutral-700' : 'text-neutral-400',
+                    ]"
+                  >
                     Votre lien public :
                   </p>
 
-                  <p class="text-sm font-medium text-orange-600 truncate">
+                  <p
+                    :class="[
+                      'text-sm font-medium truncate',
+
+                      isPremium ? 'text-orange-600' : 'text-neutral-400',
+                    ]"
+                  >
                     https://moncarnetderecettes.vercel.app/u/{{
                       (authStore.user && authStore.user.username) || "..."
                     }}
@@ -412,6 +386,7 @@ const premiumUntil = computed(() => premiumEndsAt.value);
                 </div>
 
                 <button
+                  v-if="isPremium"
                   type="button"
                   @click="copyToClipboard"
                   :class="[
@@ -431,6 +406,12 @@ const premiumUntil = computed(() => premiumEndsAt.value);
                     >{{ copied ? "Copié !" : "Copier" }}</span
                   >
                 </button>
+                <div
+                  v-if="!isPremium"
+                  class="bg-neutral-100 flex items-center justify-center size-12 rounded-lg"
+                >
+                  <Lock class="text-neutral-600" />
+                </div>
               </div>
             </div>
 
@@ -479,6 +460,7 @@ const premiumUntil = computed(() => premiumEndsAt.value);
                   v-model="newPassword"
                   autocomplete="new-password"
                   type="password"
+                  :disabled="true"
                   placeholder="Min. 6 caractères"
                   class="flex-1 p-3 bg-neutral-50 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
                 />

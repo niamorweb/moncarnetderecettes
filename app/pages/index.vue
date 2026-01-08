@@ -14,13 +14,11 @@ import {
   ExternalLink,
 } from "lucide-vue-next";
 
-// Animation d'apparition au scroll (simple et performant)
 const isVisible = ref(false);
 onMounted(() => {
   setTimeout(() => (isVisible.value = true), 100);
 });
 
-// Wording orienté bénéfice utilisateur
 const features = [
   {
     title: "Éditeur Intuitif",
@@ -56,16 +54,14 @@ const features = [
 
 const containerRef = ref<HTMLElement | null>(null);
 
-// Configuration des cartes avec leur position FINALE
 const floatingCards = [
   {
     title: "Pancakes Fluffy",
     img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&q=80&w=400",
     category: "Petit-Dej",
     time: "15 min",
-    // Position finale
     finalClass: "top-10 -left-4 md:-left-12 rotate-[-6deg]",
-    delay: "0ms", // Délai pour l'effet "un par un"
+    delay: "0ms",
   },
   {
     title: "Salade César",
@@ -86,19 +82,17 @@ const floatingCards = [
 ];
 
 onMounted(() => {
-  // On utilise l'Observer pour détecter le scroll
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
           isVisible.value = true;
-          // Optionnel : on arrête d'observer une fois animé
           observer.unobserve(entry.target);
         }
       });
     },
     {
-      threshold: 0.4, // L'animation se lance quand 40% de l'élément est visible
+      threshold: 0.4,
       rootMargin: "0px",
     }
   );
@@ -519,7 +513,6 @@ onMounted(() => {
 </template>
 
 <style>
-/* Animation Utility Classes */
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -553,14 +546,10 @@ onMounted(() => {
   perspective: 1000px;
 }
 
-/* Cette courbe de Bézier est cruciale pour l'effet "Waouh".
-   Elle crée un léger rebond à la fin du mouvement.
-*/
 .cubic-bezier-spring {
   transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* Animation de flottement organique */
 @keyframes float {
   0%,
   100% {
@@ -571,7 +560,6 @@ onMounted(() => {
   }
 }
 
-/* Animation d'entrée du Héros */
 @keyframes heroEntrance {
   0% {
     transform: translateY(50px) scale(0.9);
@@ -583,14 +571,12 @@ onMounted(() => {
   }
 }
 
-/* Animation d'apparition des petites cartes */
 @keyframes fadeIn {
   to {
     opacity: 1;
   }
 }
 
-/* Pulsation lente du fond */
 @keyframes pulseSlow {
   0%,
   100% {
@@ -605,7 +591,6 @@ onMounted(() => {
 
 .animate-float {
   animation: float 6s ease-in-out infinite;
-  /* On garde la rotation définie dans le style inline */
 }
 
 .animate-float-delayed {

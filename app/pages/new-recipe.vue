@@ -9,23 +9,14 @@ import {
 
 import type { Category } from "~/types/models/category";
 
-import { z } from "zod"; // Assure-toi d'avoir installé zod: npm install zod
-
-// 1. Outils Nuxt / Store
+import { z } from "zod";
 
 const router = useRouter();
-
 const route = useRoute();
-
 const categories = ref<Category[]>([]);
-
-const loading = ref(true); // Loading initial pour les catégories
-
-const submitting = ref(false); // Loading pour l'envoi du formulaire
-
+const loading = ref(true);
+const submitting = ref(false);
 const error = ref(null);
-
-// 2. Chargement des données
 
 const loadDashboardData = async () => {
   try {
@@ -43,109 +34,63 @@ onMounted(() => {
   loadDashboardData();
 });
 
-// 3. État du formulaire et Erreurs
-
 const imageFile = ref<File | null>(null);
-
 const newCategoryName = ref("");
-
-// Objet pour stocker les erreurs par champ (ex: { name: "Requis", prep_time: "Trop court" })
-
 const fieldErrors = ref<Record<string, string>>({});
 
 const recipeData = reactive({
   name: "",
-
   servings: "",
-
   prep_time: "",
-
   cook_time: "",
-
   ingredients: [""],
-
   steps: [""],
-
   categoryId: (route.query.category as string) || null,
 });
 
-// 4. Définition du Schéma de Validation (Zod)
-
 const recipeSchema = z.object({
   name: z.string().min(3, "Le nom doit faire au moins 3 caractères"),
-
-  // z.coerce force la conversion en nombre avant validation
-
   prep_time: z.coerce.number({ message: "Requis" }).min(1, "Temps requis"),
-
-  cook_time: z.coerce.number().optional(), // Pas obligatoire selon ta demande, mais bon à typer
-
+  cook_time: z.coerce.number().optional(),
   servings: z.coerce.number({ message: "Requis" }).min(1, "Au moins 1 pers."),
-
-  // On filtre les chaînes vides avant de vérifier la longueur du tableau
-
   ingredients: z
-
     .array(z.string())
-
     .transform((arr) => arr.filter((s) => s.trim() !== ""))
-
     .refine((arr) => arr.length > 0, "Il faut au moins un ingrédient"),
-
   steps: z
-
     .array(z.string())
-
     .transform((arr) => arr.filter((s) => s.trim() !== ""))
-
     .refine((arr) => arr.length > 0, "Il faut au moins une étape"),
-
   image: z
-
     .custom<File | null>(
       (val) => val instanceof File,
-
       "L'image est obligatoire"
     )
-
     .refine(
       (file) => {
         if (!file) return false;
-
         const validTypes = [
           "image/png",
-
           "image/jpeg",
-
           "image/jpg",
-
           "image/webp",
         ];
-
         return validTypes.includes(file.type);
       },
-
       { message: "Formats acceptés : .png, .jpeg, .jpg, .webp" }
     )
-
     .refine(
       (file) => {
         if (!file) return false;
-
-        return file.size <= 5 * 1024 * 1024; // Optionnel : limite à 5Mo pour éviter les crashs
+        return file.size <= 5 * 1024 * 1024;
       },
-
       { message: "L'image ne doit pas dépasser 5 Mo" }
     ),
 });
 
-// 5. Aperçu de l'image
-
 const imagePreview = computed(() => {
   return imageFile.value ? URL.createObjectURL(imageFile.value) : null;
 });
-
-// 6. Gestion des listes
 
 const handleAdd = (type: "ingredients" | "steps") => {
   recipeData[type].push("");
@@ -163,23 +108,12 @@ const handleImageChange = (e: Event) => {
   if (target.files?.[0]) {
     imageFile.value = target.files[0];
 
-    // On efface l'erreur si l'utilisateur ajoute une image
-
     if (fieldErrors.value.image) delete fieldErrors.value.image;
   }
 };
 
-// 7. Soumission
-
 const handleSubmit = async () => {
-  // 1. Reset des erreurs
-
   fieldErrors.value = {};
-
-  // 2. Validation Zod
-
-  // On construit un objet temporaire qui ressemble au schéma pour le valider
-
   const payloadToValidate = {
     ...recipeData,
 
@@ -189,55 +123,34 @@ const handleSubmit = async () => {
   const validation = recipeSchema.safeParse(payloadToValidate);
 
   if (!validation.success) {
-    // Si échec, on map les erreurs Zod vers notre objet fieldErrors
-
     validation.error.issues.forEach((err) => {
-      // path[0] correspond au nom du champ (ex: "name", "ingredients")
-
       if (err.path[0]) {
         fieldErrors.value[err.path[0].toString()] = err.message;
       }
     });
 
-    // UX : Scroll vers le haut pour voir les erreurs
-
     window.scrollTo({ top: 0, behavior: "smooth" });
 
-    return; // On arrête tout ici
+    return;
   }
 
-  // 3. Si tout est valide, on envoie
   submitting.value = true;
 
   try {
     const formData = new FormData();
-
     formData.append("name", recipeData.name);
-
     formData.append("servings", recipeData.servings.toString());
-
     formData.append("prep_time", recipeData.prep_time.toString());
-
-    formData.append("cook_time", recipeData.cook_time.toString()); // Peut être vide
-
+    formData.append("cook_time", recipeData.cook_time.toString());
     formData.append("categoryId", recipeData.categoryId || "");
-
     formData.append("newCategoryName", newCategoryName.value.trim());
 
-    // Utilisation des données nettoyées (sans les lignes vides) grâce à la validation précédente ?
-
-    // Non, safeParse ne modifie pas recipeData, on refiltre pour l'envoi propre.
-
     recipeData.ingredients
-
       .filter((i) => i.trim())
-
       .forEach((ing) => formData.append("ingredients[]", ing));
 
     recipeData.steps
-
       .filter((s) => s.trim())
-
       .forEach((step) => formData.append("steps[]", step));
 
     if (imageFile.value) {
@@ -246,21 +159,16 @@ const handleSubmit = async () => {
 
     await $api("/recipes", {
       method: "POST",
-
       body: formData,
     });
 
     await router.push("/dashboard");
   } catch (err: any) {
-    // Erreur globale API (ex: serveur down)
-
     error.value = err.data?.message || "Erreur lors de la création";
   } finally {
     submitting.value = false;
   }
 };
-
-// Classes utilitaires pour gérer l'état normal vs erreur
 
 const getInputClass = (fieldName: string) => {
   const base =
