@@ -83,7 +83,7 @@ const handleResend = async () => {
           <CheckCircle :size="32" />
         </div>
         <h2 class="text-3xl font-bold text-neutral-900 mb-2">
-          Vérifiez votre boîte mail
+          Vérifiez votre boîte mail (spams)
         </h2>
 
         <p class="text-neutral-500 mb-8">

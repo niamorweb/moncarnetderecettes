@@ -83,8 +83,8 @@ const handleSignup = async () => {
     // Stockage Pinia
     auth.setAuth(res.access_token, res.user);
 
-    // await router.push("/confirm-your-email?email=" + formData.email);
-    await navigateTo("/dashboard");
+    await router.push("/confirm-your-email?email=" + formData.email);
+    // await navigateTo("/dashboard");
   } catch (err: any) {
     serverError.value =
       err?.data?.message || err?.message || "Une erreur est survenue.";
@@ -130,6 +130,16 @@ const handleSignup = async () => {
             <p class="text-neutral-500">
               Commencez votre collection culinaire dès aujourd'hui.
             </p>
+            <div class="text-neutral-700">
+              <span class="font-medium">Astuce</span> : Utilisez
+              <NuxtLink
+                target="_blank"
+                class="text-orange-600"
+                href="https://temp-mail.org/fr/"
+                >https://temp-mail.org/fr/
+              </NuxtLink>
+              pour avoir un email temporaire
+            </div>
           </div>
 
           <form @submit.prevent="handleSignup" class="space-y-5">
