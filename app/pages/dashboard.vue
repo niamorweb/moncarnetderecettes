@@ -2,6 +2,7 @@
 import {
   BookType,
   ChefHat,
+  Loader2,
   Move,
   Plus,
   PlusCircle,
@@ -23,6 +24,8 @@ if (!authStore.isAuthenticated) {
 const recipes = ref<Recipe[]>([]);
 const categories = ref<Category[]>([]);
 const loading = ref(true);
+const isSubmittingCategory = ref(false);
+
 const loadDashboardData = async () => {
   loading.value = true;
 
@@ -75,12 +78,12 @@ const filteredRecipes = computed(() => {
 });
 
 const handleAddCategory = async () => {
-  console.log("fefe :: ", newCategoryName.value);
-
   if (!newCategoryName.value.trim()) return;
 
+  isSubmittingCategory.value = true;
+
   try {
-    $api<Category>("/categories", {
+    await $api<Category>("/categories", {
       method: "POST",
       body: { name: newCategoryName.value },
     });
@@ -90,6 +93,8 @@ const handleAddCategory = async () => {
     await loadDashboardData();
   } catch (err) {
     console.error("Erreur lors de l'ajout de la catégorie", err);
+  } finally {
+    isSubmittingCategory.value = false;
   }
 };
 
@@ -374,14 +379,31 @@ const openDeleteModal = (
               </span>
             </button>
 
-            <form v-if="isAddingCategory" @submit.prevent="handleAddCategory">
+            <form
+              v-if="isAddingCategory"
+              @submit.prevent="handleAddCategory"
+              class="relative flex items-center"
+            >
               <input
                 v-model="newCategoryName"
                 autofocus
-                @blur="!newCategoryName && (isAddingCategory = false)"
-                class="bg-white border-2 border-orange-400 px-4 py-2 rounded-full text-sm outline-none"
+                :disabled="isSubmittingCategory"
+                @blur="
+                  !newCategoryName &&
+                    !isSubmittingCategory &&
+                    (isAddingCategory = false)
+                "
+                class="bg-white border-2 border-orange-400 pl-4 pr-9 py-2 rounded-full text-sm outline-none transition-all disabled:bg-neutral-50 disabled:text-neutral-400"
+                :class="isSubmittingCategory ? 'cursor-wait' : ''"
                 placeholder="Nom..."
               />
+
+              <div
+                v-if="isSubmittingCategory"
+                class="absolute right-3 flex items-center justify-center"
+              >
+                <Loader2 :size="16" class="animate-spin text-orange-500" />
+              </div>
             </form>
 
             <UiButton

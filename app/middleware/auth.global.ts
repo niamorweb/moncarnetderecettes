@@ -69,7 +69,6 @@
 //   }
 // });
 
-// middleware/auth.global.ts
 import { jwtDecode } from "jwt-decode";
 
 export default defineNuxtRouteMiddleware(async (to, from) => {
@@ -80,14 +79,8 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
   const path = to.path.replace(/\/$/, "") || "/";
   const isPublicPage = publicPages.includes(path);
 
-  // --- EXCLUSIONS ---
-
-  // On laisse passer les routes utilitaires ou publiques spécifiques
   if (to.path.startsWith("/u/")) return;
   if (to.path.startsWith("/auth/verify")) return;
-
-  // IMPORTANT : On empêche la boucle infinie.
-  // Si l'utilisateur va déjà vers la page de confirmation, on laisse faire.
   if (to.path.startsWith("/confirm-your-email")) {
     return;
   }
@@ -95,7 +88,6 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
   // --- BLOC 1 : Déjà authentifié dans Pinia ---
   if (authStore.isAuthenticated) {
     // NOUVEAU : Si l'email n'est pas vérifié, on force la redirection
-    // On utilise ?. pour éviter les erreurs si l'objet user est mal formé
     if (authStore.user?.isEmailVerified === false) {
       // <--- VÉRIFICATION ICI
       return navigateTo("/confirm-your-email", { external: true });

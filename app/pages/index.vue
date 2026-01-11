@@ -465,7 +465,8 @@ onMounted(() => {
                 class="bg-green-500 size-2 rounded-full ml-3 animate-pulse"
               ></div>
               <code class="text-xs font-mono text-neutral-300"
-                >moncarnetderecettes.app/<span class="text-white font-bold"
+                >moncarnetderecettes.vercel.app/u/<span
+                  class="text-white font-bold"
                   >username</span
                 ></code
               >

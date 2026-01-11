@@ -5,10 +5,13 @@ const route = useRoute();
 const config = useRuntimeConfig();
 
 const email = computed(() => route.query.email as string);
-
+const authStore = useAuthStore();
 const loading = ref(false);
 const sent = ref(false);
 const errorMsg = ref("");
+
+const apiBase = config.public.apiBase;
+
 const cooldown = ref(0);
 let timerInterval: any = null;
 
@@ -28,6 +31,21 @@ const startCooldown = (seconds: number) => {
 onUnmounted(() => {
   if (timerInterval) clearInterval(timerInterval);
 });
+
+const handleSignOut = async () => {
+  try {
+    await $fetch("/auth/logout", {
+      method: "POST",
+      baseURL: apiBase,
+      credentials: "include",
+    });
+  } catch (e) {
+    console.error("Logout backend failed");
+  } finally {
+    authStore.logout();
+    await navigateTo("/");
+  }
+};
 
 const handleResend = async () => {
   if (!email.value || loading.value || cooldown.value > 0) return;
@@ -59,10 +77,7 @@ const handleResend = async () => {
     class="min-h-screen bg-neutral-50 flex items-center justify-center px-4 py-12"
   >
     <div class="w-full max-w-md text-center">
-      <NuxtLink
-        to="/"
-        class="flex items-center justify-center gap-2 mb-10 group"
-      >
+      <div class="flex items-center justify-center gap-2 mb-10 group">
         <div
           class="bg-neutral-900 text-white p-2 rounded-xl group-hover:bg-orange-600 transition-colors"
         >
@@ -71,7 +86,7 @@ const handleResend = async () => {
         <span class="text-2xl font-bold text-neutral-900 tracking-tight"
           >MonCarnetDeRecettes</span
         >
-      </NuxtLink>
+      </div>
 
       <div
         class="bg-white rounded-[2rem] shadow-xl shadow-neutral-200/50 border border-neutral-200 p-10"
@@ -141,6 +156,9 @@ const handleResend = async () => {
           spams.
         </p>
       </div>
+      <button class="mt-6 text-red-500" @click="handleSignOut">
+        Se déconnecter
+      </button>
     </div>
   </div>
 </template>
