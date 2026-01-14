@@ -10,6 +10,8 @@ import {
   ChevronDown,
   Menu,
   X,
+  Book,
+  BookText,
 } from "lucide-vue-next";
 import draggable from "vuedraggable";
 import jsPDF from "jspdf";
@@ -27,6 +29,7 @@ const apiBase = config.public.apiBase;
 const recipes = ref<Recipe[]>([]);
 const categories = ref<Category[]>([]);
 const loading = ref(true);
+const isOrderModalOpen = ref(false);
 
 const loadDashboardData = async () => {
   try {
@@ -234,8 +237,9 @@ const generatePDF = async () => {
         </draggable>
       </div>
 
-      <div class="p-4 border-t border-neutral-200 bg-white">
+      <div class="p-4 flex flex-col gap-3 border-t border-neutral-200 bg-white">
         <UiButton
+          variant="outline"
           @click="generatePDF"
           :disabled="isGenerating || recipes.length === 0"
           class="w-full"
@@ -243,6 +247,10 @@ const generatePDF = async () => {
           <Loader2 v-if="isGenerating" class="animate-spin" :size="18" />
           <Download v-else :size="18" />
           {{ isGenerating ? "Création..." : "Télécharger PDF" }}
+        </UiButton>
+
+        <UiButton @click="isOrderModalOpen = true" class="w-full" size="lg">
+          <BookTextv-else :size="18" />Commander ce carnet
         </UiButton>
       </div>
     </aside>
@@ -302,6 +310,7 @@ const generatePDF = async () => {
         </div>
       </div>
     </div>
+    <OrderModal :is-open="isOrderModalOpen" @close="isOrderModalOpen = false" />
   </div>
 </template>
 

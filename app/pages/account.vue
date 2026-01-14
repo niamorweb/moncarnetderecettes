@@ -24,7 +24,7 @@ const newPassword = ref("");
 const loading = ref(false);
 const copied = ref(false);
 const premiumEndsAt = ref(null);
-const isModalOpen = ref(false);
+const oldPassword = ref("");
 
 const profileStatus = ref<{ type: "error" | "success"; msg: string } | null>(
   null
@@ -89,25 +89,44 @@ const handleProfileUpdate = async () => {
 };
 
 const handleChangePassword = async () => {
-  if (newPassword.value.length < 6) return;
+  // 1. Validation de base
+  if (newPassword.value.length < 8) {
+    passwordStatus.value = { type: "error", msg: "8 caractères minimum." };
+    return;
+  }
+
   loading.value = true;
   passwordStatus.value = null;
 
   try {
-    await $fetch("/auth/change-password", {
-      method: "POST",
+    // 2. Utilisation de $fetch avec les deux mots de passe
+    await $fetch("/auth/update-password", {
+      method: "PATCH",
       baseURL: apiBase,
       headers: { Authorization: `Bearer ${authStore.accessToken}` },
-      body: { newPassword: newPassword.value },
+      body: {
+        oldPassword: oldPassword.value,
+        newPassword: newPassword.value,
+      },
     });
 
     passwordStatus.value = {
       type: "success",
       msg: "Mot de passe mis à jour !",
     };
+
+    // Reset les champs
     newPassword.value = "";
+    oldPassword.value = "";
   } catch (error: any) {
-    passwordStatus.value = { type: "error", msg: "Erreur lors du changement." };
+    // 3. Récupération correcte du message d'erreur de NestJS
+    // NestJS renvoie l'erreur dans error.data
+    const errorMessage = error.data?.message || "Erreur lors du changement.";
+
+    passwordStatus.value = {
+      type: "error",
+      msg: Array.isArray(errorMessage) ? errorMessage[0] : errorMessage,
+    };
   } finally {
     loading.value = false;
   }
@@ -141,10 +160,6 @@ const copyToClipboard = async () => {
 };
 
 const isPremiumModalOpen = ref(false);
-
-const handleCloseModal = () => {
-  isPremiumModalOpen.value = false;
-};
 
 const goToStripePayment = async () => {
   isPremiumModalOpen.value = false;
@@ -442,11 +457,16 @@ const premiumUntil = computed(() => premiumEndsAt.value);
                 class="text-sm font-bold text-neutral-700 uppercase tracking-widest text-[10px]"
                 >E-mail de connexion</label
               >
-              <div
-                class="flex items-center gap-3 p-4 bg-neutral-50 border border-neutral-100 rounded-2xl text-sm text-neutral-500 font-bold"
-              >
-                <Mail class="size-4" />
-                {{ authStore?.user?.email }}
+              <div class="w-full flex flex-col gap-2">
+                <label class="text-sm text-neutral-800" for="old-password"
+                  >Adresse email</label
+                >
+                <div
+                  class="flex items-center gap-3 p-4 bg-neutral-50 border border-neutral-100 rounded-2xl text-sm text-neutral-500 font-bold"
+                >
+                  <Mail class="size-4" />
+                  {{ authStore?.user?.email }}
+                </div>
               </div>
             </div>
 
@@ -455,15 +475,33 @@ const premiumUntil = computed(() => premiumEndsAt.value);
                 class="text-sm font-bold text-neutral-700 uppercase tracking-widest text-[10px]"
                 >Changer de mot de passe</label
               >
-              <div class="flex gap-2">
-                <input
-                  v-model="newPassword"
-                  autocomplete="new-password"
-                  type="password"
-                  :disabled="true"
-                  placeholder="Min. 6 caractères"
-                  class="flex-1 p-3 bg-neutral-50 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
-                />
+              <div class="flex flex-col gap-4">
+                <div class="w-full flex flex-col gap-2">
+                  <label class="text-sm text-neutral-800" for="old-password"
+                    >Mot de passe actuel</label
+                  >
+                  <input
+                    name="old-password"
+                    v-model="oldPassword"
+                    autocomplete="old-password"
+                    type="password"
+                    placeholder="Min. 6 caractères"
+                    class="flex-1 p-3 bg-neutral-50 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
+                  />
+                </div>
+                <div class="w-full flex flex-col gap-2">
+                  <label class="text-sm text-neutral-800" for="new-password"
+                    >Nouveau mot de passe</label
+                  >
+                  <input
+                    v-model="newPassword"
+                    name="new-password"
+                    autocomplete="new-password"
+                    type="password"
+                    placeholder="Min. 6 caractères"
+                    class="flex-1 p-3 bg-neutral-50 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
+                  />
+                </div>
               </div>
 
               <p
@@ -480,7 +518,7 @@ const premiumUntil = computed(() => premiumEndsAt.value);
               <div class="w-full flex justify-end">
                 <UiButton
                   type="submit"
-                  :disabled="loading || newPassword.length < 6"
+                  :disabled="loading || !oldPassword || newPassword.length < 6"
                   variant="primary"
                 >
                   Changer le mot de passe

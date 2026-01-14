@@ -14,6 +14,8 @@ const route = useRoute();
 const username = route.params.username as string;
 const config = useRuntimeConfig();
 const apiBase = config.public.apiBase;
+const selectedCategory = ref<string | null>(null);
+const searchQuery = ref("");
 
 const {
   data: pageData,
@@ -38,9 +40,6 @@ watch(
   { immediate: true }
 );
 
-const selectedCategory = ref<string | null>(null);
-const searchQuery = ref("");
-
 const filteredRecipes = computed(() => {
   if (!pageData.value?.recipes) return [];
 
@@ -60,7 +59,6 @@ const filteredRecipes = computed(() => {
   return result;
 });
 
-// 5. SEO
 const displayName = computed(() => pageData.value?.profile?.name || username);
 const avatarUrl = computed(
   () =>
@@ -97,7 +95,12 @@ onMounted(() => {
           >
         </div>
 
-        <UiButton size="sm" variant="primary" to="/signup">
+        <UiButton
+          class="pointer-events-auto"
+          size="sm"
+          variant="primary"
+          to="/signup"
+        >
           Créer mon carnet
           <ArrowUpRight :size="14" />
         </UiButton>
@@ -253,7 +256,7 @@ onMounted(() => {
           v-for="(recipe, index) in filteredRecipes"
           :key="recipe.id"
           :to="`/u/${username}/recipe/${recipe.id}`"
-          class="group relative bg-white rounded-[2.5rem] p-3 shadow-sm border border-neutral-100 hover:shadow-2xl hover:border-orange-100 hover:-translate-y-1 transition-all duration-500"
+          class="group h-fit relative bg-white rounded-[2.5rem] p-3 shadow-sm border border-neutral-100 hover:shadow-2xl hover:border-orange-100 hover:-translate-y-1 transition-all duration-500"
           :style="{
             '--delay': `${
               // @ts-ignore

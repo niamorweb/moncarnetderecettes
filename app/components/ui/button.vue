@@ -7,6 +7,7 @@ interface Props {
   size?: "sm" | "md" | "lg";
   isIcon?: boolean;
   className?: string;
+  isDisabled?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -14,6 +15,7 @@ const props = withDefaults(defineProps<Props>(), {
   size: "md",
   isIcon: false,
   className: "",
+  isDisabled: false,
 });
 
 /* ======================
@@ -80,12 +82,18 @@ const computedClasses = computed(() => {
 
 <template>
   <!-- Lien -->
-  <NuxtLink v-if="to" :to="to" :class="computedClasses">
+  <NuxtLink v-if="to" :disabled="isDisabled" :to="to" :class="computedClasses">
     <slot />
   </NuxtLink>
 
   <!-- Bouton -->
-  <button v-else type="button" :class="computedClasses" v-bind="$attrs">
+  <button
+    v-else
+    type="button"
+    :disabled="isDisabled"
+    :class="computedClasses"
+    v-bind="$attrs"
+  >
     <slot />
   </button>
 </template>

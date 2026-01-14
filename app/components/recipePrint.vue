@@ -277,3 +277,13 @@ const imageHeight = "180px";
     </div>
   </div>
 </template>
+
+<style>
+.pdf-page-container::before {
+  content: "";
+  absolute: inset 0;
+  background-image: url("https://www.transparenttextures.com/patterns/paper-fibers.png");
+  opacity: 0.05;
+  pointer-events: none;
+}
+</style>
