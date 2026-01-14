@@ -415,28 +415,20 @@ import {
   Loader2,
 } from "lucide-vue-next";
 
-// --- PROPS ---
-// On a besoin de l'URL du PDF généré pour la passer au backend
 const props = defineProps<{
   isOpen?: boolean;
-  pdfUrl?: string | null; // Assure-toi de passer ça depuis le parent !
+  pdfUrl?: string | null;
 }>();
 const emit = defineEmits(["close", "orderCreated"]);
 
-// --- COMPOSABLES ---
-const { $api } = useNuxtApp() as any; // Utilise ton plugin axios/ofetch configuré
-const authStore = useAuthStore(); // Si besoin du token (géré par $api normalement)
-
-// --- STATE ---
 const currentStep = ref(1);
-const totalSteps = 5; // Ajout étape Livraison + Paiement
+const totalSteps = 5;
 const isLoading = ref(false);
 const errorMsg = ref<string | null>(null);
 const config = useRuntimeConfig();
 const apiBase = config.public.apiBase;
-const isSuccess = ref(false); // Pour basculer sur l'écran de succès
+const isSuccess = ref(false);
 
-// Config impression
 const orderConfig = reactive({
   coverType: null as string | null,
   paperType: null as string | null,
@@ -445,7 +437,6 @@ const orderConfig = reactive({
   format: "A5",
 });
 
-// Config Livraison (Nouveau)
 const shipping = reactive({
   name: "",
   line1: "",
@@ -455,8 +446,6 @@ const shipping = reactive({
   country: "FR",
 });
 
-// --- DATA & PRIX ---
-// J'ai ajouté des prix fictifs pour l'exemple
 const coverOptions = [
   {
     id: "hardcover",
@@ -506,16 +495,11 @@ const finishOptions = [
   },
 ];
 
-// --- LOGIC ---
-
-// Calcul du prix total
 const totalPrice = computed(() => {
   let total = 0;
-  // Prix de base couverture
   const cover = coverOptions.find((c) => c.id === orderConfig.coverType);
   if (cover) total += cover.price;
 
-  // Prix papier
   const paper = paperOptions.find((p) => p.id === orderConfig.paperType);
   if (paper) total += paper.price;
 
@@ -529,13 +513,11 @@ const formattedTotalPrice = computed(() => {
   }).format(totalPrice.value);
 });
 
-// Validation étapes
 const canProceed = computed(() => {
   if (currentStep.value === 1) return !!orderConfig.coverType;
   if (currentStep.value === 2) return !!orderConfig.paperType;
   if (currentStep.value === 3) return !!orderConfig.finishType;
   if (currentStep.value === 4) {
-    // Validation basique adresse
     return (
       shipping.name.length > 2 &&
       shipping.line1.length > 5 &&
