@@ -37,7 +37,7 @@ watch(
       });
     }
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 const filteredRecipes = computed(() => {
@@ -52,7 +52,7 @@ const filteredRecipes = computed(() => {
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase();
     result = result.filter((r: any) =>
-      (r.title || r.name).toLowerCase().includes(query)
+      (r.title || r.name).toLowerCase().includes(query),
     );
   }
 
@@ -62,7 +62,7 @@ const filteredRecipes = computed(() => {
 const displayName = computed(() => pageData.value?.profile?.name || username);
 const avatarUrl = computed(
   () =>
-    `https://ui-avatars.com/api/?name=${displayName.value}&background=fff7ed&color=ea580c&size=128`
+    `https://ui-avatars.com/api/?name=${displayName.value}&background=fff7ed&color=ea580c&size=128`,
 );
 
 useSeoMeta({
@@ -84,29 +84,6 @@ onMounted(() => {
   <div
     class="min-h-screen bg-[#FAFAFA] text-neutral-900 font-sans selection:bg-orange-100 selection:text-orange-900"
   >
-    <nav class="z-40 px-6 py-4 pointer-events-none">
-      <div class="max-w-7xl mx-auto flex justify-between items-center">
-        <div
-          class="bg-white/80 backdrop-blur-md border border-white/40 shadow-sm md:px-4 p-2 rounded-full pointer-events-auto flex items-center gap-2"
-        >
-          <BookOpen :size="16" class="text-orange-600" />
-          <span class="text-xs font-bold hidden md:block text-neutral-900"
-            >MonCarnetDeRecettes</span
-          >
-        </div>
-
-        <UiButton
-          class="pointer-events-auto"
-          size="sm"
-          variant="primary"
-          to="/signup"
-        >
-          Créer mon carnet
-          <ArrowUpRight :size="14" />
-        </UiButton>
-      </div>
-    </nav>
-
     <div
       v-if="status === 'pending'"
       class="max-w-7xl mx-auto px-6 pt-16 z-0 relative animate-pulse"
@@ -125,21 +102,27 @@ onMounted(() => {
       </div>
     </div>
 
-    <div
-      v-else-if="pageData"
-      class="pt-16 pb-20 px-6 max-w-7xl mx-auto relative"
-    >
-      <div
-        class="fixed top-0 left-1/2 -translate-x-1/2 w-[100vw] h-[600px] bg-gradient-to-b from-orange-50/50 to-transparent pointer-events-none -z-10"
-      ></div>
+    <div v-else-if="pageData" class="pb-20 px-6 max-w-7xl mx-auto relative">
+      <nav class="z-40 py-4">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+          <NuxtLink class="flex items-center gap-2" to="/">
+            <BookOpen :size="16" class="text-orange-600" />
+            <span class="text-xs font-bold text-neutral-900 hidden md:block"
+              >MonCarnetDeRecettes</span
+            >
+          </NuxtLink>
+          <UiButton to="/" variant="outline" size="sm">
+            Créer mon carnet
+          </UiButton>
+        </div>
+      </nav>
 
-      <header class="flex flex-col items-center text-center mb-16 relative">
-        <div class="relative mb-6 group">
+      <header
+        class="flex flex-col items-center text-center mt-10 mb-10 relative"
+      >
+        <div class="relative mb-3 group">
           <div
-            class="absolute inset-0 bg-orange-200 rounded-full blur-xl opacity-0 group-hover:opacity-50 transition-opacity duration-700"
-          ></div>
-          <div
-            class="relative size-24 md:size-28 rounded-full border-[3px] border-white shadow-xl overflow-hidden bg-orange-50"
+            class="relative size-24 md:size-28 rounded-full outline outline-orange-100 overflow-hidden bg-orange-50"
           >
             <img
               :src="avatarUrl"
@@ -147,29 +130,16 @@ onMounted(() => {
               class="w-full h-full object-cover"
             />
           </div>
-          <div
-            class="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-white px-3 py-1 rounded-full border border-neutral-100 shadow-sm flex items-center gap-1.5 whitespace-nowrap"
-          >
-            <Sparkles :size="12" class="text-orange-500 fill-orange-500" />
-            <span
-              class="text-[10px] font-black uppercase tracking-wider text-neutral-600"
-              >Premium Chef</span
-            >
-          </div>
         </div>
 
         <h1
-          class="text-4xl md:text-6xl font-black text-neutral-900 tracking-tighter mb-4"
+          class="text-3xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-amber-600 tracking-tighter mb-2"
         >
-          La cuisine de
-          <span
-            class="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-amber-600"
-            >{{ displayName }}</span
-          >.
+          {{ displayName }}
         </h1>
 
         <p
-          class="text-lg md:text-xl text-neutral-500 font-medium max-w-2xl leading-relaxed"
+          class="text-sm md:text-base text-neutral-500 font-medium max-w-2xl leading-relaxed"
         >
           {{
             pageData.profile?.bio ||
@@ -177,7 +147,7 @@ onMounted(() => {
           }}
         </p>
 
-        <div class="mt-8 flex gap-8 text-neutral-400">
+        <!-- <div class="mt-8 flex gap-8 text-neutral-400">
           <div class="text-center">
             <span class="block text-xl font-black text-neutral-900">{{
               pageData.recipes.length
@@ -194,17 +164,30 @@ onMounted(() => {
               >Catégories</span
             >
           </div>
-        </div>
+        </div> -->
       </header>
 
       <div
-        class="sticky top-20 z-30 mb-10 transition-all duration-300"
+        class="fixed bottom-6 z-30 left-12 right-12 shrink-0 outline outline-neutral-300 bg-white rounded-full"
+      >
+        <Search
+          class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 size-4"
+        />
+        <input
+          v-model="searchQuery"
+          type="text"
+          placeholder="Chercher un plat..."
+          class="w-full pl-10 pr-4 py-3.5 rounded-full text-sm font-bold border-transparent focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-200 transition-all outline-none"
+        />
+      </div>
+      <!-- <div
+        class="fixed bottom-8 z-30 transition-all duration-300"
         :class="{ 'py-2': true }"
       >
         <div
           class="bg-white/80 backdrop-blur-xl border border-white/50 p-2 pl-4 rounded-[2rem] shadow-xl shadow-neutral-200/40 flex flex-col md:flex-row items-center gap-4 max-w-4xl mx-auto"
         >
-          <div
+           <div
             class="flex-1 w-full overflow-x-auto no-scrollbar flex items-center gap-2 pr-4"
           >
             <button
@@ -231,32 +214,22 @@ onMounted(() => {
             >
               {{ cat.name }}
             </button>
-          </div>
+          </div> 
 
-          <div class="w-full md:w-64 relative shrink-0">
-            <Search
-              class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 size-4"
-            />
-            <input
-              v-model="searchQuery"
-              type="text"
-              placeholder="Chercher un plat..."
-              class="w-full pl-10 pr-4 py-2.5 bg-neutral-100 rounded-full text-sm font-bold border-transparent focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-200 transition-all outline-none"
-            />
-          </div>
+          
         </div>
-      </div>
+      </div> -->
 
       <TransitionGroup
         tag="div"
         name="recipe-grid"
-        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 min-h-[400px]"
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 min-h-[400px]"
       >
         <NuxtLink
           v-for="(recipe, index) in filteredRecipes"
           :key="recipe.id"
           :to="`/u/${username}/recipe/${recipe.id}`"
-          class="group h-fit relative bg-white rounded-[2.5rem] p-3 shadow-sm border border-neutral-100 hover:shadow-2xl hover:border-orange-100 hover:-translate-y-1 transition-all duration-500"
+          class="group h-fit relative bg-white rounded-[2.5rem] p-3 shadow-sm border border-neutral-100 transition-all duration-500"
           :style="{
             '--delay': `${
               // @ts-ignore
@@ -265,24 +238,19 @@ onMounted(() => {
           }"
         >
           <div
-            class="aspect-[4/3] rounded-[2rem] overflow-hidden bg-neutral-100 relative"
+            class="aspect-[4/3] rounded-[2rem] md:rounded-[1.5rem] overflow-hidden bg-neutral-100 relative"
           >
             <NuxtImg
-              :src="recipe.image_url || '/images/placeholder-recipe.jpg'"
+              v-if="recipe.image_url"
+              :src="recipe.image_url"
               :alt="recipe.title"
               class="object-cover w-full h-full transition-transform duration-700 group-hover:scale-110"
               loading="lazy"
             />
             <div
-              class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+              v-else
+              class="object-cover w-full h-full bg-neutral-800 transition-transform duration-700 group-hover:scale-110"
             ></div>
-
-            <div
-              v-if="recipe.category"
-              class="absolute top-3 right-3 bg-white/95 backdrop-blur px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider text-neutral-800 shadow-sm z-10"
-            >
-              {{ recipe.category?.name }}
-            </div>
           </div>
 
           <div class="px-2 pt-4 pb-2">
@@ -294,6 +262,12 @@ onMounted(() => {
 
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-3">
+                <div
+                  v-if="recipe.category"
+                  class="bg-green-100 backdrop-blur px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider text-green-900 shadow-sm z-10"
+                >
+                  {{ recipe.category?.name }}
+                </div>
                 <div
                   class="flex items-center gap-1.5 text-xs font-bold text-neutral-500 bg-neutral-50 px-2 py-1 rounded-lg"
                 >

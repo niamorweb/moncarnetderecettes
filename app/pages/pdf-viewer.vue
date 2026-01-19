@@ -199,10 +199,15 @@ const generatePDF = async () => {
                   class="relative size-10 shrink-0 rounded-lg overflow-hidden border border-neutral-100"
                 >
                   <NuxtImg
-                    :src="recipe.image_url || '/placeholder.jpg'"
+                    v-if="recipe.image_url"
+                    :src="recipe.image_url"
                     class="object-cover w-full h-full"
                     loading="lazy"
                   />
+                  <div
+                    v-else
+                    class="object-cover w-full h-full bg-neutral-800 transition-transform duration-700 group-hover:scale-110"
+                  ></div>
                 </div>
                 <span
                   :class="[
@@ -293,7 +298,9 @@ const generatePDF = async () => {
       <div
         class="w-full max-w-full overflow-x-auto py-8 lg:py-10 flex justify-center px-4"
       >
-        <div class="origin-top scale-[0.85] sm:scale-100 transition-transform">
+        <div
+          class="origin-top scale-[0.85] sm:scale-100 overflow-auto transition-transform"
+        >
           <RecipePrint v-if="activeRecipe" :recipe="activeRecipe" />
         </div>
       </div>
@@ -313,14 +320,3 @@ const generatePDF = async () => {
     <OrderModal :is-open="isOrderModalOpen" @close="isOrderModalOpen = false" />
   </div>
 </template>
-
-<style scoped>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-</style>

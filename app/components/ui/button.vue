@@ -28,9 +28,9 @@ const baseStyles =
    Tailles normales
 ====================== */
 const sizeStyles = {
-  sm: "px-4 py-2 text-sm rounded-lg gap-1.5",
-  md: "px-6 py-3 text-sm rounded-xl gap-2",
-  lg: "px-8 py-4 text-base rounded-xl gap-3",
+  sm: "px-4 h-10 flex items-center justify-center text-sm rounded-lg gap-1.5",
+  md: "px-6 h-12 flex items-center justify-center text-sm rounded-xl gap-2",
+  lg: "px-8 h-16 flex items-center justify-center text-base rounded-xl gap-3",
 };
 
 /* ======================

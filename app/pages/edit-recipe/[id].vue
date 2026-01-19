@@ -232,7 +232,7 @@ const getInputClass = (fieldName: string) => {
 
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div class="lg:col-span-5 space-y-6">
-          <div
+          <UiCard
             class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-neutral-100"
           >
             <h1
@@ -366,7 +366,7 @@ const getInputClass = (fieldName: string) => {
                 Vérifiez les temps et le nombre de parts.
               </div>
             </div>
-          </div>
+          </UiCard>
         </div>
 
         <div class="lg:col-span-7 space-y-6">
@@ -377,8 +377,7 @@ const getInputClass = (fieldName: string) => {
             <AlertCircle :size="20" /> {{ error }}
           </div>
 
-          <div
-            class="bg-white p-8 rounded-[2.5rem] shadow-xl transition-all"
+          <UiCard
             :class="
               fieldErrors.ingredients ? 'ring-2 ring-red-500 ring-offset-2' : ''
             "
@@ -426,10 +425,9 @@ const getInputClass = (fieldName: string) => {
             >
               + Ajouter
             </button>
-          </div>
+          </UiCard>
 
-          <div
-            class="bg-white p-8 rounded-[2.5rem] shadow-xl transition-all"
+          <UiCard
             :class="
               fieldErrors.steps ? 'ring-2 ring-red-500 ring-offset-2' : ''
             "
@@ -483,14 +481,12 @@ const getInputClass = (fieldName: string) => {
             >
               + Ajouter une étape
             </button>
-          </div>
+          </UiCard>
         </div>
       </div>
     </div>
 
-    <div
-      class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white/80 backdrop-blur-md p-3 rounded-2xl shadow-2xl border border-neutral-200 flex gap-4 z-50"
-    >
+    <div class="fixed bottom-6 left-1/2 -translate-x-1/2 flex gap-4 z-50">
       <UiButton type="button" @click="router.back()" variant="outline"
         >Annuler</UiButton
       >

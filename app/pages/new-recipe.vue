@@ -10,6 +10,7 @@ import {
 import type { Category } from "~/types/models/category";
 
 import { z } from "zod";
+import type { Recipe } from "~/types/models/recipe";
 
 const router = useRouter();
 const route = useRoute();
@@ -17,6 +18,7 @@ const categories = ref<Category[]>([]);
 const loading = ref(true);
 const submitting = ref(false);
 const error = ref(null);
+const querySource = route.query.source;
 
 const loadDashboardData = async () => {
   try {
@@ -30,21 +32,29 @@ const loadDashboardData = async () => {
   }
 };
 
-onMounted(() => {
-  loadDashboardData();
-});
+const authStore = useAuthStore();
 
 const imageFile = ref<File | null>(null);
 const newCategoryName = ref("");
 const fieldErrors = ref<Record<string, string>>({});
 
+const dataFromScan =
+  authStore.user.isPremium &&
+  querySource &&
+  querySource === "scan" &&
+  localStorage.getItem("scan-data");
+const parsedDataFromScan = dataFromScan && JSON.parse(dataFromScan);
+
+console.log("query :: ", querySource);
+console.log("parsedDataFromScan :: ", parsedDataFromScan);
+
 const recipeData = reactive({
-  name: "",
-  servings: "",
-  prep_time: "",
-  cook_time: "",
-  ingredients: [""],
-  steps: [""],
+  name: parsedDataFromScan ? parsedDataFromScan.nom : "",
+  servings: parsedDataFromScan ? parsedDataFromScan.portions : "",
+  prep_time: parsedDataFromScan ? parsedDataFromScan.temps_preparation : "",
+  cook_time: parsedDataFromScan ? parsedDataFromScan.temps_preparation : "",
+  ingredients: parsedDataFromScan ? parsedDataFromScan.ingredients : [""],
+  steps: parsedDataFromScan ? parsedDataFromScan.etapes : [""],
   categoryId: (route.query.category as string) || null,
 });
 
@@ -62,13 +72,13 @@ const recipeSchema = z.object({
     .transform((arr) => arr.filter((s) => s.trim() !== ""))
     .refine((arr) => arr.length > 0, "Il faut au moins une étape"),
   image: z
-    .custom<File | null>(
-      (val) => val instanceof File,
-      "L'image est obligatoire"
-    )
+    .any() // start with a generic type; we'll validate manually
+    .optional()
     .refine(
       (file) => {
-        if (!file) return false;
+        // If the field is omitted, validation passes.
+        if (!file) return true;
+
         const validTypes = [
           "image/png",
           "image/jpeg",
@@ -77,14 +87,15 @@ const recipeSchema = z.object({
         ];
         return validTypes.includes(file.type);
       },
-      { message: "Formats acceptés : .png, .jpeg, .jpg, .webp" }
+      { message: "Formats acceptés : .png, .jpeg, .jpg, .webp" },
     )
     .refine(
       (file) => {
-        if (!file) return false;
+        if (!file) return true;
+
         return file.size <= 5 * 1024 * 1024;
       },
-      { message: "L'image ne doit pas dépasser 5 Mo" }
+      { message: "L'image ne doit pas dépasser 5 Mo" },
     ),
 });
 
@@ -97,7 +108,9 @@ const handleAdd = (type: "ingredients" | "steps") => {
 };
 
 const handleRemove = (type: "ingredients" | "steps", index: number) => {
-  recipeData[type] = recipeData[type].filter((_, i) => i !== index);
+  recipeData[type] = recipeData[type].filter(
+    (_: Recipe, i: number) => i !== index,
+  );
 
   if (recipeData[type].length === 0) recipeData[type] = [""];
 };
@@ -146,12 +159,12 @@ const handleSubmit = async () => {
     formData.append("newCategoryName", newCategoryName.value.trim());
 
     recipeData.ingredients
-      .filter((i) => i.trim())
-      .forEach((ing) => formData.append("ingredients[]", ing));
+      .filter((i: string) => i.trim())
+      .forEach((ing: string) => formData.append("ingredients[]", ing));
 
     recipeData.steps
-      .filter((s) => s.trim())
-      .forEach((step) => formData.append("steps[]", step));
+      .filter((s: string) => s.trim())
+      .forEach((step: string) => formData.append("steps[]", step));
 
     if (imageFile.value) {
       formData.append("image", imageFile.value);
@@ -180,6 +193,10 @@ const getInputClass = (fieldName: string) => {
 
   return base + "border-neutral-200 focus:ring-2 focus:ring-orange-400";
 };
+
+onMounted(() => {
+  loadDashboardData();
+});
 </script>
 
 <template>
@@ -192,26 +209,26 @@ const getInputClass = (fieldName: string) => {
         <ChevronLeft :size="20" /> Retour
       </UiButton>
 
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-6">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-20 md:mb-0 mt-6">
         <div class="lg:col-span-5 space-y-6">
-          <div
-            class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-neutral-100"
-          >
-            <h1 class="text-3xl font-black mb-8 flex items-center gap-2">
-              Nouvelle Recette
-
+          <UiCard>
+            <div
+              class="flex flex-col gap-2 md:flex-row md:justify-between md:items-center mb-8"
+            >
+              <h1 class="text-3xl font-black flex items-center gap-2">
+                Nouvelle Recette
+              </h1>
               <span
-                class="text-xs font-normal text-neutral-400 bg-neutral-100 px-2 py-1 rounded-full"
+                class="text-xs w-fit font-normal text-neutral-400 bg-neutral-100 px-2 py-1 rounded-full"
               >
                 * Champs requis
               </span>
-            </h1>
-
+            </div>
             <div class="mb-8">
               <label
                 class="flex justify-between text-xs font-black uppercase tracking-widest text-neutral-400 mb-3"
               >
-                Photo <span class="text-red-500 text-lg leading-3">*</span>
+                Photo
               </label>
 
               <div
@@ -287,6 +304,7 @@ const getInputClass = (fieldName: string) => {
                     type="number"
                     :class="getInputClass('prep_time')"
                     @input="delete fieldErrors.prep_time"
+                    placeholder="0"
                   />
                 </div>
 
@@ -301,6 +319,7 @@ const getInputClass = (fieldName: string) => {
                     v-model="recipeData.cook_time"
                     type="number"
                     :class="getInputClass('cook_time')"
+                    placeholder="0"
                   />
                 </div>
 
@@ -316,6 +335,7 @@ const getInputClass = (fieldName: string) => {
                     type="number"
                     :class="getInputClass('servings')"
                     @input="delete fieldErrors.servings"
+                    placeholder="0"
                   />
                 </div>
               </div>
@@ -362,7 +382,7 @@ const getInputClass = (fieldName: string) => {
                 </div>
               </div>
             </div>
-          </div>
+          </UiCard>
         </div>
 
         <div class="lg:col-span-7 space-y-6">
@@ -373,13 +393,14 @@ const getInputClass = (fieldName: string) => {
             {{ error }}
           </div>
 
-          <div
-            class="bg-white p-8 rounded-[2.5rem] shadow-xl transition-all"
+          <UiCard
             :class="
               fieldErrors.ingredients ? 'ring-2 ring-red-500 ring-offset-2' : ''
             "
           >
-            <div class="flex justify-between items-center mb-6">
+            <div
+              class="flex flex-col md:flex-row md:justify-between md:items-center mb-6"
+            >
               <h2 class="text-2xl font-black">
                 Ingrédients <span class="text-red-500">*</span>
               </h2>
@@ -407,7 +428,7 @@ const getInputClass = (fieldName: string) => {
 
                 <button
                   type="button"
-                  @click="handleRemove('ingredients', index)"
+                  @click="handleRemove('ingredients', index as number)"
                   class="text-neutral-300 hover:text-red-500 transition-colors px-2"
                 >
                   <X />
@@ -422,15 +443,16 @@ const getInputClass = (fieldName: string) => {
             >
               + Ingrédient
             </button>
-          </div>
+          </UiCard>
 
-          <div
-            class="bg-white p-8 rounded-[2.5rem] shadow-xl transition-all"
+          <UiCard
             :class="
               fieldErrors.steps ? 'ring-2 ring-red-500 ring-offset-2' : ''
             "
           >
-            <div class="flex justify-between items-center mb-6">
+            <div
+              class="flex flex-col md:flex-row md:justify-between md:items-center mb-6"
+            >
               <h2 class="text-2xl font-black">
                 Préparation <span class="text-red-500">*</span>
               </h2>
@@ -449,23 +471,25 @@ const getInputClass = (fieldName: string) => {
                 :key="index"
                 class="flex gap-4"
               >
-                <span
-                  class="size-10 bg-neutral-900 text-white font-black rounded-2xl flex items-center justify-center shrink-0 mt-1"
+                <div
+                  class="size-10 hidden md:flex bg-neutral-800 rounded-xl flex items-center justify-center shrink-0 mt-1"
                 >
-                  {{ index + 1 }}
-                </span>
+                  <span class="text-white font-medium">
+                    {{ (index as number) + 1 }}
+                  </span>
+                </div>
 
                 <textarea
                   v-model="recipeData.steps[index]"
                   rows="3"
-                  class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
+                  class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl h-[150px] focus:outline-none focus:ring-2 focus:ring-orange-400"
                   placeholder="Détail de l'étape..."
                   @input="delete fieldErrors.steps"
                 />
 
                 <button
                   type="button"
-                  @click="handleRemove('steps', index)"
+                  @click="handleRemove('steps', index as number)"
                   class="text-neutral-300 hover:text-red-500 transition-colors px-2 self-start mt-4"
                 >
                   <X />
@@ -480,13 +504,13 @@ const getInputClass = (fieldName: string) => {
             >
               + Étape
             </button>
-          </div>
+          </UiCard>
         </div>
       </div>
     </div>
 
     <div
-      class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-md p-3 rounded-2xl shadow-2xl border border-neutral-200 flex gap-4 z-50 transition-transform duration-300"
+      class="fixed bottom-6 left-1/2 -translate-x-1/2 flex gap-4 z-50 transition-transform duration-300"
       :class="Object.keys(fieldErrors).length > 0 ? 'translate-y-2' : ''"
     >
       <UiButton

@@ -12,14 +12,19 @@ import {
   Crown,
   AlertCircle,
 } from "lucide-vue-next";
+import Card from "~/components/ui/card.vue";
 
 const authStore = useAuthStore();
 const config = useRuntimeConfig();
 const apiBase = config.public.apiBase;
 const router = useRouter();
 
+// Public profile data
 const username = ref("");
 const publicName = ref("");
+const bio = ref("");
+const avatar = ref<null | File>(null);
+
 const newPassword = ref("");
 const loading = ref(false);
 const copied = ref(false);
@@ -27,10 +32,10 @@ const premiumEndsAt = ref(null);
 const oldPassword = ref("");
 
 const profileStatus = ref<{ type: "error" | "success"; msg: string } | null>(
-  null
+  null,
 );
 const passwordStatus = ref<{ type: "error" | "success"; msg: string } | null>(
-  null
+  null,
 );
 
 watchEffect(() => console.log("public :", publicName.value));
@@ -65,14 +70,19 @@ const handleProfileUpdate = async () => {
   profileStatus.value = null;
 
   try {
+    const formData = new FormData();
+    formData.append("username", username.value);
+    formData.append("bio", bio.value);
+    formData.append("public_name", publicName.value);
+    if (avatar.value) {
+      formData.append("avatar", avatar.value);
+    }
+
     await $fetch("/profiles/me", {
       method: "PATCH",
       baseURL: apiBase,
       headers: { Authorization: `Bearer ${authStore.accessToken}` },
-      body: {
-        username: username.value.trim(),
-        public_name: publicName.value.trim(),
-      },
+      body: formData,
     });
 
     profileStatus.value = { type: "success", msg: "Profil mis à jour !" };
@@ -119,8 +129,6 @@ const handleChangePassword = async () => {
     newPassword.value = "";
     oldPassword.value = "";
   } catch (error: any) {
-    // 3. Récupération correcte du message d'erreur de NestJS
-    // NestJS renvoie l'erreur dans error.data
     const errorMessage = error.data?.message || "Erreur lors du changement.";
 
     passwordStatus.value = {
@@ -192,7 +200,7 @@ const openPremiumModal = () => {
 
 const handleCancelSubscription = async () => {
   const confirmCancel = confirm(
-    "Êtes-vous sûr de vouloir résilier votre abonnement ? Vous garderez vos accès jusqu'à la fin de la période en cours."
+    "Êtes-vous sûr de vouloir résilier votre abonnement ? Vous garderez vos accès jusqu'à la fin de la période en cours.",
   );
 
   if (!confirmCancel) return;
@@ -216,7 +224,7 @@ const handleCancelSubscription = async () => {
   } catch (err: any) {
     console.error("Erreur lors de l'annulation:", err);
     alert(
-      err.data?.message || "Une erreur est survenue lors de la résiliation."
+      err.data?.message || "Une erreur est survenue lors de la résiliation.",
     );
   } finally {
     loading.value = false;
@@ -232,6 +240,20 @@ const formatDate = (dateString: string | Date) => {
 };
 
 const premiumUntil = computed(() => premiumEndsAt.value);
+
+const fileInput = ref<HTMLInputElement | null>(null);
+const profilePictureUrl = ref<string | null>(null); // Pour l'aperçu local
+
+const triggerFileInput = () => fileInput.value?.click();
+
+const handleFileChange = (e: Event) => {
+  const file = (e.target as HTMLInputElement).files?.[0];
+  if (file) {
+    // Crée une URL temporaire pour l'aperçu immédiat
+    profilePictureUrl.value = URL.createObjectURL(file);
+    // Logique pour uploader le fichier ici
+  }
+};
 </script>
 
 <template>
@@ -315,9 +337,7 @@ const premiumUntil = computed(() => premiumEndsAt.value);
           </div>
         </ClientOnly>
 
-        <div
-          class="bg-white border border-neutral-200 p-8 rounded-[2.5rem] shadow-xl mb-8"
-        >
+        <Card class="mb-6">
           <h2
             class="text-xl font-black pb-4 mb-8 text-neutral-900 flex items-center gap-3 border-b border-neutral-100"
           >
@@ -330,7 +350,7 @@ const premiumUntil = computed(() => premiumEndsAt.value);
           <div
             v-if="profileStatus"
             :class="[
-              'p-4 rounded-2xl mb-6 font-bold flex items-center gap-2',
+              'p-4 fixed top-4 z-40 rounded-2xl mb-6 font-bold flex items-center gap-2',
               profileStatus.type === 'success'
                 ? 'bg-green-50 text-green-700'
                 : 'bg-red-50 text-red-600',
@@ -341,16 +361,60 @@ const premiumUntil = computed(() => premiumEndsAt.value);
           </div>
 
           <form @submit.prevent="handleProfileUpdate" class="space-y-8">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="flex flex-col md:grid md:grid-cols-2 gap-6">
+              <div class="flex flex-col col-span-2 items-center gap-4 mb-8">
+                <div
+                  @click="triggerFileInput"
+                  class="relative group cursor-pointer"
+                >
+                  <div
+                    class="size-24 rounded-full border-4 border-white shadow-md overflow-hidden bg-neutral-100 flex items-center justify-center"
+                  >
+                    <img
+                      v-if="profilePictureUrl || authStore.user?.avatarUrl"
+                      :src="profilePictureUrl || authStore.user?.avatarUrl"
+                      class="size-full object-cover"
+                    />
+                    <User v-else class="size-10 text-neutral-400" />
+
+                    <div
+                      class="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Camera class="text-white" :size="24" />
+                    </div>
+                  </div>
+
+                  <input
+                    ref="fileInput"
+                    type="file"
+                    accept="image/*"
+                    class="hidden"
+                    @change="handleFileChange"
+                  />
+                </div>
+                <p class="text-xs text-neutral-500 font-medium">
+                  Cliquez pour modifier la photo
+                </p>
+              </div>
               <div class="space-y-3">
                 <label class="text-sm font-bold text-neutral-700"
                   >Nom d'affichage</label
                 >
-                <input
+                <UiInput
                   v-model="publicName"
+                  placeholder="Nom d'affichage public"
                   autocomplete="name"
                   type="text"
-                  class="w-full p-3 bg-neutral-50 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none transition-all"
+                />
+              </div>
+              <div class="space-y-3">
+                <label class="text-sm font-bold text-neutral-700">Bio</label>
+                <UiInput
+                  v-model="bio"
+                  placeholder="Une petite bio"
+                  autocomplete="bio"
+                  type="text"
+                  :is-text-area="true"
                 />
               </div>
 
@@ -358,14 +422,12 @@ const premiumUntil = computed(() => premiumEndsAt.value);
                 <label class="text-sm font-bold text-neutral-700"
                   >Nom d'utilisateur (identifiant URL)</label
                 >
-                <input
+                <UiInput
                   v-model="username"
                   autocomplete="username"
+                  placeholder="Nom d'utilisateur"
                   type="text"
                   class="w-full p-3 bg-neutral-50 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none transition-all"
-                  @input="
-                    username = username.toLowerCase().replace(/[^a-z0-9_]/g, '')
-                  "
                 />
               </div>
             </div>
@@ -437,11 +499,9 @@ const premiumUntil = computed(() => premiumEndsAt.value);
               </UiButton>
             </div>
           </form>
-        </div>
+        </Card>
 
-        <div
-          class="bg-white border border-neutral-200 p-8 rounded-[2.5rem] shadow-xl"
-        >
+        <Card class="mb-6">
           <h2
             class="text-xl font-black pb-4 mb-8 text-neutral-900 flex items-center gap-3 border-b border-neutral-100"
           >
@@ -462,7 +522,7 @@ const premiumUntil = computed(() => premiumEndsAt.value);
                   >Adresse email</label
                 >
                 <div
-                  class="flex items-center gap-3 p-4 bg-neutral-50 border border-neutral-100 rounded-2xl text-sm text-neutral-500 font-bold"
+                  class="cursor-not-allowed border border-neutral-200 flex items-center gap-3 p-4 bg-neutral-50 border border-neutral-100 rounded-2xl text-sm text-neutral-500 font-medium"
                 >
                   <Mail class="size-4" />
                   {{ authStore?.user?.email }}
@@ -480,26 +540,24 @@ const premiumUntil = computed(() => premiumEndsAt.value);
                   <label class="text-sm text-neutral-800" for="old-password"
                     >Mot de passe actuel</label
                   >
-                  <input
+                  <UiInput
                     name="old-password"
                     v-model="oldPassword"
                     autocomplete="old-password"
                     type="password"
                     placeholder="Min. 6 caractères"
-                    class="flex-1 p-3 bg-neutral-50 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
                   />
                 </div>
                 <div class="w-full flex flex-col gap-2">
                   <label class="text-sm text-neutral-800" for="new-password"
                     >Nouveau mot de passe</label
                   >
-                  <input
+                  <UiInput
                     v-model="newPassword"
                     name="new-password"
                     autocomplete="new-password"
                     type="password"
                     placeholder="Min. 6 caractères"
-                    class="flex-1 p-3 bg-neutral-50 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
                   />
                 </div>
               </div>
@@ -526,7 +584,7 @@ const premiumUntil = computed(() => premiumEndsAt.value);
               </div>
             </form>
           </div>
-        </div>
+        </Card>
       </div>
     </div>
   </div>

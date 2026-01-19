@@ -27,7 +27,7 @@ defineEmits(["toggle"]);
     @keydown.enter.prevent="$emit('toggle', recipe.id)"
     @keydown.space.prevent="$emit('toggle', recipe.id)"
     :class="[
-      'group relative bg-white border-2 rounded-[2rem] overflow-hidden transition-all duration-300 cursor-pointer outline-none',
+      'group relative bg-white border-2 rounded-[2rem] overflow-hidden transition-all h-fit duration-300 cursor-pointer outline-none',
 
       'focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2',
 
@@ -50,9 +50,14 @@ defineEmits(["toggle"]);
 
     <div class="relative h-48 bg-neutral-100 overflow-hidden">
       <NuxtImg
-        :src="recipe.image_url || '/placeholder.jpg'"
+        v-if="recipe.image_url"
+        :src="recipe.image_url"
         class="object-cover w-full h-full transition-transform duration-700 group-hover:scale-110"
       />
+      <div
+        v-else
+        class="object-cover w-full h-full bg-neutral-800 transition-transform duration-700 group-hover:scale-110"
+      ></div>
     </div>
 
     <div class="p-5">

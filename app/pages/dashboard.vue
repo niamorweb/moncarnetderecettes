@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import {
+  ArrowDown,
   BookType,
+  Camera,
   ChefHat,
   Loader2,
   Move,
   Plus,
   PlusCircle,
+  ScanText,
   Trash,
   User,
   X,
@@ -25,6 +28,13 @@ const recipes = ref<Recipe[]>([]);
 const categories = ref<Category[]>([]);
 const loading = ref(true);
 const isSubmittingCategory = ref(false);
+const isVisible = ref(false);
+const selectedRecipes = ref<string[]>([]);
+const isPickerModalOpen = ref(false);
+const selectedCategory = ref<string | null>(null);
+const isAddingCategory = ref(false);
+const newCategoryName = ref("");
+const isMoveMenuOpen = ref(false);
 
 const loadDashboardData = async () => {
   loading.value = true;
@@ -45,28 +55,12 @@ const loadDashboardData = async () => {
   }
 };
 
-onMounted(() => {
-  loadDashboardData();
-});
-
-const isVisible = ref(false);
-const selectedRecipes = ref<string[]>([]);
-const isPickerModalOpen = ref(false);
-const selectedCategory = ref<string | null>(null);
-const isAddingCategory = ref(false);
-const newCategoryName = ref("");
-const isMoveMenuOpen = ref(false);
-
 const modalConfig = reactive({
   isOpen: false,
   type: null as "recipe" | "category" | null,
   data: null as string | null,
   title: "",
   description: "",
-});
-
-onMounted(() => {
-  isVisible.value = true;
 });
 
 const filteredRecipes = computed(() => {
@@ -166,6 +160,11 @@ const openDeleteModal = (
       ? "Supprimer les recettes sélectionnées ?"
       : "La catégorie sera supprimée, mais les recettes seront conservées.";
 };
+
+onMounted(() => {
+  isVisible.value = true;
+  loadDashboardData();
+});
 </script>
 
 <template>
@@ -410,7 +409,7 @@ const openDeleteModal = (
               v-else
               :is-icon="true"
               variant="secondary"
-              class="aspect-square size-10 !p-0 !rounded-full"
+              class="aspect-square flex-1 !size-10 !p-0 !rounded-full"
               @click="isAddingCategory = true"
             >
               <Plus :size="20" />
@@ -420,14 +419,41 @@ const openDeleteModal = (
 
         <div
           :class="[
-            'fixed bottom-5 right-5 md:bottom-0 md:right-0 md:relative z-20',
+            'fixed flex flex-col items-center justify-center bottom-5 right-5 md:bottom-0 md:right-0 md:relative z-20',
 
             selectedRecipes.length > 0 ? 'hidden md:block' : '',
           ]"
         >
-          <UiButton to="/new-recipe">
-            <Plus :size="12" /> Nouvelle recette
-          </UiButton>
+          <div class="flex items-center hidden md:flex">
+            <UiButton
+              to="/new-recipe"
+              :class="
+                authStore.user.isPremium && 'rounded-tr-none rounded-br-none'
+              "
+            >
+              <Plus class="size-4" />
+              Nouvelle recette
+            </UiButton>
+            <NuxtLink
+              v-if="authStore.user.isPremium"
+              to="/scan-recipe"
+              class="flex items-center justify-center bg-orange-700 duration-300 hover:bg-orange-600 text-white h-12 px-3 rounded-tr-xl rounded-br-xl"
+            >
+              <ScanText class="size-4" />
+            </NuxtLink>
+          </div>
+          <NuxtLink
+            to="/scan-recipe"
+            class="bg-neutral-100 outline outline-neutral-200 mb-3 size-12 flex items-center justify-center text-neutral-800 rounded-full md:hidden"
+          >
+            <ScanText :size="24" />
+          </NuxtLink>
+          <NuxtLink
+            to="/new-recipe"
+            class="bg-orange-600 size-16 flex items-center justify-center text-white rounded-full md:hidden"
+          >
+            <Plus :size="32" />
+          </NuxtLink>
         </div>
       </div>
 
@@ -452,13 +478,13 @@ const openDeleteModal = (
 
         <h3 class="text-3xl font-black mb-3">Cette catégorie est vide</h3>
 
-        <div class="flex gap-4 justify-center mt-8">
+        <div class="flex flex-col md:flex-row gap-4 justify-center mt-8">
           <UiButton variant="outline" @click="isPickerModalOpen = true"
             >Piocher des recettes</UiButton
           >
 
           <UiButton :to="`/new-recipe?category=${selectedCategory}`"
-            ><PlusCircle :size="18" /> Créer ici</UiButton
+            ><Plus :size="18" /> Créer ici</UiButton
           >
         </div>
       </div>

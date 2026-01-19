@@ -9,6 +9,7 @@ import {
   BookOpen,
   Lock,
   Star,
+  ScanText,
 } from "lucide-vue-next";
 
 interface Props {
@@ -21,6 +22,24 @@ const emit = defineEmits(["close", "upgrade", "cancel-subscription"]);
 
 const plans = [
   {
+    name: "Premium",
+    price: "4.99",
+    description: "Partagez votre passion avec le monde entier.",
+    features: [
+      { text: "Tout de l'offre gratuite", active: true },
+      {
+        text: "Outil IA permettant d'importer des recettes via des scans de photo",
+        active: true,
+        icon: ScanText,
+      },
+      { text: "Profil Public Personnalisé", active: true, icon: Globe },
+      { text: "SEO (Indexation Google)", active: true, icon: Search },
+      { text: "Lien court moncarnet.app/u/toi", active: true, icon: Zap },
+    ],
+    variant: "premium",
+    button: props.isPremium ? "Plan actuel" : "Devenir Premium",
+  },
+  {
     name: "Gratuit",
     price: "0",
     description: "L'essentiel pour cuisiner sereinement.",
@@ -28,26 +47,9 @@ const plans = [
       { text: "Recettes illimitées", active: true },
       { text: "Espace personnel sécurisé", active: true },
       { text: "Export Carnet Physique (Payant)", active: true },
-      { text: "Profil Public", active: false },
-      { text: "SEO & Google Search", active: false },
     ],
     variant: "ghost",
     button: props.isPremium ? "Revenir au plan gratuit" : "Plan actuel",
-  },
-  {
-    name: "Premium",
-    price: "4.99",
-    description: "Partagez votre passion avec le monde entier.",
-    features: [
-      { text: "Recettes illimitées", active: true },
-      { text: "Espace personnel sécurisé", active: true },
-      { text: "Export Carnet Physique (Inclus)", active: true },
-      { text: "Profil Public Personnalisé", active: true, icon: Globe },
-      { text: "SEO (Indexation Google)", active: true, icon: Search },
-      { text: "Lien court moncarnet.app/u/toi", active: true, icon: Zap },
-    ],
-    variant: "premium",
-    button: props.isPremium ? "Plan actuel" : "Devenir Premium",
   },
 ];
 </script>
@@ -57,15 +59,15 @@ const plans = [
     <Transition name="modal-fade">
       <div
         v-if="isOpen"
-        class="fixed overflow-auto inset-0 z-[100] flex items-center justify-center p-4"
+        class="fixed overflow-hidden inset-0 z-[100] flex items-center justify-center p-4"
       >
         <div
-          class="absolute inset-0 bg-neutral-900/60 backdrop-blur-md"
+          class="fixed inset-0 bg-neutral-900/60 overflow-hidden backdrop-blur-md"
           @click="emit('close')"
         />
 
         <div
-          class="relative bg-neutral-50 rounded-[3rem] shadow-2xl max-w-4xl w-full overflow-hidden transition-all"
+          class="relative h-[80vh] overflow-auto bg-neutral-50 rounded-[3rem] shadow-2xl max-w-4xl w-full transition-all"
         >
           <button
             @click="emit('close')"
@@ -182,24 +184,3 @@ const plans = [
     </Transition>
   </div>
 </template>
-
-<style scoped>
-.modal-fade-enter-active,
-.modal-fade-leave-active {
-  transition: opacity 0.4s ease;
-}
-
-.modal-fade-enter-from,
-.modal-fade-leave-to {
-  opacity: 0;
-}
-
-.modal-fade-enter-active .relative {
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.modal-fade-enter-from .relative {
-  transform: scale(0.9) translateY(30px);
-  opacity: 0;
-}
-</style>

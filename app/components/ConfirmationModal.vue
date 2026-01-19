@@ -51,20 +51,16 @@ const emit = defineEmits(["close", "confirm"]);
               {{ description }}
             </p>
 
-            <div class="flex flex-col sm:flex-row gap-3">
-              <UiButton
-                class="flex-1"
-                variant="outline"
-                type="button"
-                @click="emit('close')"
-              >
+            <div
+              class="flex flex-col md:flex-row w-full md:justify-center md:items-center gap-3"
+            >
+              <UiButton variant="outline" type="button" @click="emit('close')">
                 Annuler
               </UiButton>
               <UiButton
                 type="button"
                 @click="emit('confirm')"
                 :class="[
-                  'flex-1 text-white font-bold rounded-2xl shadow-lg transition-all',
                   variant === 'danger'
                     ? 'bg-red-600 hover:bg-red-700 shadow-red-100'
                     : 'bg-neutral-900 hover:bg-neutral-800 shadow-neutral-100',

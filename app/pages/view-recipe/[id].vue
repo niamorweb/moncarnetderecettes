@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ChevronLeft, Utensils, ChefHat, Pen } from "lucide-vue-next";
+import { ChevronLeft, Utensils, ChefHat, Pen, Trash } from "lucide-vue-next";
 
 import type { Recipe } from "~/types/models/recipe";
 
@@ -85,13 +85,13 @@ const openDeleteModal = (id: string) => {
 
           <div class="flex items-center gap-2">
             <UiButton @click="openDeleteModal(recipe.id)" variant="destructive">
-              <Pen :size="12" />
+              <Trash :size="16" />
 
-              <span>Supprimer</span>
+              <span class="hidden md:flex">Supprimer</span>
             </UiButton>
 
             <UiButton :to="`/edit-recipe/${recipe.id}`" variant="primary">
-              <Pen :size="12" />
+              <Pen :size="16" />
 
               <span>Modifier</span>
             </UiButton>
@@ -100,18 +100,21 @@ const openDeleteModal = (id: string) => {
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
           <div class="lg:col-span-5">
-            <div
-              class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-neutral-100 lg:sticky lg:top-12"
-            >
+            <UiCard class="lg:sticky lg:top-12">
               <div
                 class="relative aspect-[4/3] overflow-hidden rounded-3xl mb-8 bg-neutral-100 shadow-inner"
               >
                 <NuxtImg
-                  :src="recipe.image_url || '/images/illustration.jpeg'"
+                  v-if="recipe.image_url"
+                  :src="recipe.image_url"
                   :alt="recipe.name"
                   class="object-cover w-full h-full"
                   loading="eager"
                 />
+                <div
+                  v-else
+                  class="object-cover w-full h-full bg-neutral-800 transition-transform duration-700 group-hover:scale-110"
+                ></div>
               </div>
 
               <h1
@@ -163,13 +166,11 @@ const openDeleteModal = (id: string) => {
                   </div>
                 </div>
               </div>
-            </div>
+            </UiCard>
           </div>
 
           <div class="lg:col-span-7 space-y-8">
-            <div
-              class="bg-white p-10 rounded-[2.5rem] shadow-sm border border-neutral-100"
-            >
+            <UiCard>
               <div
                 class="flex items-center gap-3 mb-8 pb-4 border-b border-neutral-100"
               >
@@ -200,11 +201,9 @@ const openDeleteModal = (id: string) => {
                   >
                 </li>
               </ul>
-            </div>
+            </UiCard>
 
-            <div
-              class="bg-white p-10 rounded-[2.5rem] shadow-sm border border-neutral-100"
-            >
+            <UiCard>
               <div
                 class="flex items-center gap-3 mb-10 pb-4 border-b border-neutral-100"
               >
@@ -225,7 +224,7 @@ const openDeleteModal = (id: string) => {
                 >
                   <div class="flex flex-col items-center">
                     <span
-                      class="size-12 bg-neutral-900 text-white font-black rounded-[1.2rem] flex items-center justify-center shrink-0 text-lg shadow-lg"
+                      class="size-8 md:size-12 bg-neutral-900 text-white font-medium rounded-md md:rounded-lg flex items-center justify-center shrink-0 text-sm md:text-lg shadow-lg"
                     >
                       {{ index + 1 }}
                     </span>
@@ -236,16 +235,14 @@ const openDeleteModal = (id: string) => {
                     />
                   </div>
 
-                  <div class="flex-1 pt-1">
-                    <p
-                      class="text-neutral-700 text-lg leading-relaxed font-medium"
-                    >
+                  <div class="flex-1 md:pt-1">
+                    <p class="text-neutral-700 text-lg leading-relaxed">
                       {{ step }}
                     </p>
                   </div>
                 </div>
               </div>
-            </div>
+            </UiCard>
           </div>
         </div>
       </div>

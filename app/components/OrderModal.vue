@@ -65,7 +65,7 @@
                         : 'border-neutral-200 bg-white hover:border-orange-300',
                     ]"
                   >
-                    <div class="flex justify-between items-start mb-4">
+                    <div class="flex justify-between items-start mb-4 mr-4">
                       <div
                         class="size-10 rounded-full flex items-center justify-center transition-colors"
                         :class="
@@ -580,18 +580,3 @@ const createOrder = async () => {
   // }
 };
 </script>
-
-<style scoped>
-.slide-fade-enter-active,
-.slide-fade-leave-active {
-  transition: all 0.3s ease;
-}
-.slide-fade-enter-from {
-  opacity: 0;
-  transform: translateX(20px);
-}
-.slide-fade-leave-to {
-  opacity: 0;
-  transform: translateX(-20px);
-}
-</style>
