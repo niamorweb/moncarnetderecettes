@@ -26,6 +26,8 @@ const {
   lazy: true,
 });
 
+console.log("pageData ", pageData.value);
+
 watch(
   status,
   (newStatus) => {
@@ -60,10 +62,13 @@ const filteredRecipes = computed(() => {
 });
 
 const displayName = computed(() => pageData.value?.profile?.name || username);
-const avatarUrl = computed(
-  () =>
-    `https://ui-avatars.com/api/?name=${displayName.value}&background=fff7ed&color=ea580c&size=128`,
-);
+const avatarUrl = computed(() => {
+  let avatar: string =
+    pageData.value.profile.avatar_url ||
+    `https://ui-avatars.com/api/?name=${displayName.value}&background=fff7ed&color=ea580c&size=128`;
+
+  return avatar;
+});
 
 useSeoMeta({
   title: () =>
@@ -168,7 +173,7 @@ onMounted(() => {
       </header>
 
       <div
-        class="fixed bottom-6 z-30 left-12 right-12 shrink-0 outline outline-neutral-300 bg-white rounded-full"
+        class="fixed bottom-6 md:relative md:mt-10 md:mb-4 max-w-sm mx-auto md:bottom-0 md:left-0 md:right-0 z-30 left-12 right-12 shrink-0 outline outline-neutral-300 bg-white rounded-full"
       >
         <Search
           class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 size-4"
@@ -176,7 +181,7 @@ onMounted(() => {
         <input
           v-model="searchQuery"
           type="text"
-          placeholder="Chercher un plat..."
+          placeholder="Chercher une recette..."
           class="w-full pl-10 pr-4 py-3.5 rounded-full text-sm font-bold border-transparent focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-200 transition-all outline-none"
         />
       </div>

@@ -24,6 +24,7 @@ const username = ref("");
 const publicName = ref("");
 const bio = ref("");
 const avatar = ref<null | File>(null);
+const dbAvatarUrl = ref<string>("");
 
 const newPassword = ref("");
 const loading = ref(false);
@@ -38,8 +39,6 @@ const passwordStatus = ref<{ type: "error" | "success"; msg: string } | null>(
   null,
 );
 
-watchEffect(() => console.log("public :", publicName.value));
-
 const isPremium = computed(() => authStore.user?.isPremium || false);
 
 const loadProfileData = async () => {
@@ -52,9 +51,17 @@ const loadProfileData = async () => {
     });
 
     if (data) {
+      console.log("data ;;;", data);
+      console.log("data ;;;", data.profile);
+      console.log("data ;;;", data.profile.avatar_url);
+
       username.value = authStore.user?.username || "";
       premiumEndsAt.value = data.premiumEndsAt;
       publicName.value = data.profile.name || "";
+      dbAvatarUrl.value = data.profile.avatar_url;
+      bio.value = data.bio;
+
+      console.log("dbAvatarUrl :: ", dbAvatarUrl.value);
     }
   } catch (err) {
     console.error("Erreur lors du fetch profil : ", err);
@@ -251,7 +258,7 @@ const handleFileChange = (e: Event) => {
   if (file) {
     // Crée une URL temporaire pour l'aperçu immédiat
     profilePictureUrl.value = URL.createObjectURL(file);
-    // Logique pour uploader le fichier ici
+    avatar.value = file;
   }
 };
 </script>
@@ -371,11 +378,14 @@ const handleFileChange = (e: Event) => {
                     class="size-24 rounded-full border-4 border-white shadow-md overflow-hidden bg-neutral-100 flex items-center justify-center"
                   >
                     <img
-                      v-if="profilePictureUrl || authStore.user?.avatarUrl"
-                      :src="profilePictureUrl || authStore.user?.avatarUrl"
-                      class="size-full object-cover"
+                      v-if="profilePictureUrl || dbAvatarUrl"
+                      :src="profilePictureUrl || dbAvatarUrl"
+                      class="w-full h-full object-cover"
                     />
-                    <User v-else class="size-10 text-neutral-400" />
+                    <User
+                      v-else
+                      class="size-10 z-30 relative text-neutral-400"
+                    />
 
                     <div
                       class="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"

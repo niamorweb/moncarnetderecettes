@@ -67,7 +67,7 @@ const filteredRecipes = computed(() => {
   if (!recipes.value) return [];
 
   return recipes.value.filter(
-    (x) => !selectedCategory.value || selectedCategory.value === x.categoryId
+    (x) => !selectedCategory.value || selectedCategory.value === x.categoryId,
   );
 });
 
@@ -149,7 +149,7 @@ const handleDeleteCategory = async (categoryId: string) => {
 const openDeleteModal = (
   type: "recipe" | "category",
   id: string | null = null,
-  name: string = ""
+  name: string = "",
 ) => {
   modalConfig.isOpen = true;
   modalConfig.type = type;
@@ -211,7 +211,7 @@ onMounted(() => {
           >
             <div
               v-for="recipe in recipes.filter(
-                (r) => r.categoryId !== selectedCategory
+                (r) => r.categoryId !== selectedCategory,
               )"
               :key="recipe.id"
               @click="handleToggleSelectedRecipe(recipe.id)"
@@ -389,8 +389,8 @@ onMounted(() => {
                 :disabled="isSubmittingCategory"
                 @blur="
                   !newCategoryName &&
-                    !isSubmittingCategory &&
-                    (isAddingCategory = false)
+                  !isSubmittingCategory &&
+                  (isAddingCategory = false)
                 "
                 class="bg-white border-2 border-orange-400 pl-4 pr-9 py-2 rounded-full text-sm outline-none transition-all disabled:bg-neutral-50 disabled:text-neutral-400"
                 :class="isSubmittingCategory ? 'cursor-wait' : ''"
