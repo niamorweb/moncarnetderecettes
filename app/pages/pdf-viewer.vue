@@ -78,37 +78,44 @@ const move = (index: number, direction: number) => {
 
 const filteredRecipes = computed(() => {
   return recipes.value.filter((r) =>
-    r.name.toLowerCase().includes(searchTerm.value.toLowerCase())
+    r.name.toLowerCase().includes(searchTerm.value.toLowerCase()),
   );
 });
 
 const generatePDF = async () => {
-  if (!printContainerRef.value) return;
   isGenerating.value = true;
 
   try {
-    const pdf = new jsPDF({
-      orientation: "portrait",
-      unit: "mm",
-      format: "a5",
+    const blob = await $fetch("/recipes/pdf/print-all", {
+      baseURL: apiBase,
+      headers: { Authorization: `Bearer ${auth.accessToken}` },
+      responseType: "blob",
     });
 
-    const elements = printContainerRef.value.children;
-    for (let i = 0; i < elements.length; i++) {
-      const canvas = await html2canvas(elements[i] as HTMLElement, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: "#ffffff",
-        width: 559,
-        height: 794,
-      });
-      const imgData = canvas.toDataURL("image/jpeg", 0.9);
-      if (i > 0) pdf.addPage();
-      pdf.addImage(imgData, "JPEG", 0, 0, 148, 210, undefined, "FAST");
+    if (!blob) {
+      isGenerating.value = false;
+      return;
     }
-    pdf.save("Mon_Livre_de_Recettes.pdf");
-  } catch (err) {
-    console.error("Erreur PDF:", err);
+
+    //@ts-ignore
+    if (blob.type === "application/json") {
+      throw new Error("Le serveur a renvoyé une erreur au lieu d'un PDF");
+    }
+
+    //@ts-ignore
+    const url = window.URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "Mon_Livre_de_Recettes.pdf");
+    document.body.appendChild(link);
+    link.click();
+
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Erreur lors du téléchargement du PDF", error);
+    alert("Erreur lors de la génération du livre.");
   } finally {
     isGenerating.value = false;
   }

@@ -375,7 +375,7 @@ const handleFileChange = (e: Event) => {
                   class="relative group cursor-pointer"
                 >
                   <div
-                    class="size-24 rounded-full border-4 border-white shadow-md overflow-hidden bg-neutral-100 flex items-center justify-center"
+                    class="size-28 rounded-full border-4 border-white shadow-md overflow-hidden bg-neutral-100 flex items-center justify-center"
                   >
                     <img
                       v-if="profilePictureUrl || dbAvatarUrl"

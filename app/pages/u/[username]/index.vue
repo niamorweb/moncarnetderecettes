@@ -8,6 +8,8 @@ import {
   BookOpen,
   ArrowUpRight,
   Sparkles,
+  Move,
+  Filter,
 } from "lucide-vue-next";
 
 const route = useRoute();
@@ -48,7 +50,9 @@ const filteredRecipes = computed(() => {
   let result = pageData.value.recipes;
 
   if (selectedCategory.value) {
-    result = result.filter((r: any) => r.categoryId === selectedCategory.value);
+    result = result.filter(
+      (r: any) => r.category && r.category.id === selectedCategory.value,
+    );
   }
 
   if (searchQuery.value) {
@@ -83,6 +87,8 @@ const isMounted = ref(false);
 onMounted(() => {
   setTimeout(() => (isMounted.value = true), 100);
 });
+
+const isCategoriesMobileMenuOpen = ref(false);
 </script>
 
 <template>
@@ -111,7 +117,7 @@ onMounted(() => {
       <nav class="z-40 py-4">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
           <NuxtLink class="flex items-center gap-2" to="/">
-            <BookOpen :size="16" class="text-orange-600" />
+            <BookOpen :size="20" class="text-orange-600" />
             <span class="text-xs font-bold text-neutral-900 hidden md:block"
               >MonCarnetDeRecettes</span
             >
@@ -173,17 +179,87 @@ onMounted(() => {
       </header>
 
       <div
-        class="fixed bottom-6 md:relative md:mt-10 md:mb-4 max-w-sm mx-auto md:bottom-0 md:left-0 md:right-0 z-30 left-12 right-12 shrink-0 outline outline-neutral-300 bg-white rounded-full"
+        class="fixed flex items-center gap-3 bottom-6 md:relative md:mt-10 md:mb-4 mx-auto md:bottom-0 md:left-0 md:right-0 z-30 left-12 right-12"
       >
-        <Search
-          class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 size-4"
-        />
-        <input
-          v-model="searchQuery"
-          type="text"
-          placeholder="Chercher une recette..."
-          class="w-full pl-10 pr-4 py-3.5 rounded-full text-sm font-bold border-transparent focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-200 transition-all outline-none"
-        />
+        <div
+          class="shrink-0 w-full outline outline-neutral-300 bg-white rounded-full max-w-sm"
+        >
+          <Search
+            class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 size-4"
+          />
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="Chercher une recette..."
+            class="w-full pl-10 pr-4 py-3.5 rounded-full text-sm font-bold border-transparent focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-200 transition-all outline-none"
+          />
+        </div>
+        <div class="md:flex items-center gap-2 hidden">
+          <button
+            :class="[
+              'py-3.5 px-4 rounded-full outline outline-neutral-200 transition-colors',
+              selectedCategory === null
+                ? 'bg-neutral-800 text-white outline-neutral-800'
+                : 'text-neutral-700 bg-white',
+            ]"
+            @click="selectedCategory = null"
+          >
+            <span>Tout</span>
+          </button>
+          <button
+            :class="[
+              'py-3.5 px-4 rounded-full outline outline-neutral-200 transition-colors',
+              selectedCategory === item.id
+                ? 'bg-neutral-800 text-white outline-neutral-800'
+                : 'text-neutral-700 bg-white',
+            ]"
+            v-for="(item, index) in pageData.categories"
+            @click="selectedCategory = item.id"
+            :key="index"
+          >
+            <span>{{ item.name }}</span>
+          </button>
+        </div>
+        <div class="relative md:hidden">
+          <button
+            @click="isCategoriesMobileMenuOpen = !isCategoriesMobileMenuOpen"
+            :class="[
+              'flex items-center gap-2 px-4 py-3.5 rounded-full outline ',
+              selectedCategory
+                ? 'bg-orange-50 text-orange-700 outline-orange-200'
+                : 'bg-neutral-50 text-neutral-700 outline-neutral-200',
+            ]"
+          >
+            <Filter :size="20" />
+          </button>
+
+          <div
+            v-if="isCategoriesMobileMenuOpen"
+            class="absolute left-0 bottom-full mb-3 bg-white border border-neutral-200 shadow-xl rounded-2xl p-2 min-w-[200px]"
+          >
+            <button
+              @click="
+                selectedCategory = null;
+                isCategoriesMobileMenuOpen = false;
+              "
+              class="w-full text-left px-3 py-2 rounded-lg hover:bg-neutral-50 text-sm"
+            >
+              Aucune
+            </button>
+
+            <button
+              v-for="cat in pageData.categories"
+              :key="cat.id"
+              @click="
+                selectedCategory = cat.id;
+                isCategoriesMobileMenuOpen = false;
+              "
+              class="w-full text-left px-3 py-2 rounded-lg hover:bg-neutral-50 text-sm"
+            >
+              {{ cat.name }}
+            </button>
+          </div>
+        </div>
       </div>
       <!-- <div
         class="fixed bottom-8 z-30 transition-all duration-300"

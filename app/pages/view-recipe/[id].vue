@@ -27,7 +27,7 @@ const { data: recipe, error: fetchError } = await useAsyncData<Recipe>(
         Authorization: `Bearer ${auth.accessToken}`,
       },
       credentials: "include",
-    })
+    }),
 );
 
 if (fetchError.value || !recipe.value) {
@@ -236,7 +236,7 @@ const openDeleteModal = (id: string) => {
                   </div>
 
                   <div class="flex-1 md:pt-1">
-                    <p class="text-neutral-700 text-lg leading-relaxed">
+                    <p class="text-neutral-700 md:text-lg leading-relaxed">
                       {{ step }}
                     </p>
                   </div>

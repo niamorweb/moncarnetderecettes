@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Utensils, ChefHat } from "lucide-vue-next";
+import { Utensils, ChefHat, Timer, Users } from "lucide-vue-next";
 import type { Recipe } from "@/types/models/recipe";
 
 interface Props {
@@ -9,16 +9,13 @@ interface Props {
 const props = defineProps<Props>();
 
 const colors = {
-  orange: "#f97316",
-  neutral900: "#171717",
-  neutral600: "#525252",
-  neutral100: "#f5f5f5",
-  accent: "#fff7ed",
+  primary: "#f97316", // Orange vif
+  secondary: "#FFD600", // Jaune "Pop"
+  background: "#FFFBF0", // Crème (plus chaleureux que blanc)
+  text: "#1A1A1A",
+  card: "#FFFFFF",
+  border: "#1A1A1A",
 };
-
-const stepFontSize = "12px";
-const stepGap = "12px";
-const imageHeight = "180px";
 </script>
 
 <template>
@@ -28,32 +25,34 @@ const imageHeight = "180px";
     :style="{
       width: '559px',
       height: '794px',
-      padding: '40px',
-      backgroundColor: '#ffffff',
-      color: colors.neutral900,
-      fontFamily: '\'Helvetica Neue\', Helvetica, Arial, sans-serif',
+      padding: '30px',
+      backgroundColor: colors.background,
+      color: colors.text,
+      fontFamily: 'serif',
       display: 'flex',
       flexDirection: 'column',
       boxSizing: 'border-box',
       position: 'relative',
+      overflow: 'hidden',
     }"
   >
     <header
       :style="{
-        marginBottom: '20px',
-        width: '100%',
         display: 'flex',
-        alignItems: 'center',
-        gap: '24px',
+        gap: '20px',
+        marginBottom: '30px',
+        alignItems: 'flex-start',
       }"
     >
       <div
         :style="{
-          width: '200px',
-          height: imageHeight,
-          borderRadius: '16px',
-          overflow: 'hidden',
-          backgroundColor: colors.neutral100,
+          width: '220px',
+          height: '240px',
+          backgroundColor: colors.card,
+          border: `2px solid ${colors.border}`,
+          boxShadow: `6px 6px 0px ${colors.border}`,
+          padding: '10px 10px 40px 10px',
+          transform: 'rotate(-2deg)',
           flexShrink: 0,
         }"
       >
@@ -63,227 +62,183 @@ const imageHeight = "180px";
             width: '100%',
             height: '100%',
             objectFit: 'cover',
-            display: 'block',
+            border: `1px solid ${colors.border}`,
           }"
-          crossorigin="anonymous"
           alt=""
         />
       </div>
 
-      <div
-        :style="{
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          gap: '12px',
-        }"
-      >
-        <div>
-          <span
-            :style="{
-              fontSize: '10px',
-              textTransform: 'uppercase',
-              letterSpacing: '1.5px',
-              color: colors.orange,
-              fontWeight: '800',
-              display: 'block',
-              marginBottom: '4px',
-            }"
-          >
-            {{ recipe.category?.name || "Recette Maison" }}
-          </span>
-          <h1
-            :style="{
-              fontSize: '20px',
-              fontWeight: '900',
-              margin: 0,
-              lineHeight: '1.2',
-              letterSpacing: '-0.5px',
-              color: colors.neutral900,
-            }"
-          >
-            {{ recipe.name }}
-          </h1>
-        </div>
-
-        <div
+      <div :style="{ flex: 1, paddingTop: '10px' }">
+        <span
           :style="{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            backgroundColor: colors.neutral100,
-            padding: '8px 12px',
-            borderRadius: '12px',
-            width: 'fit-content',
+            backgroundColor: colors.secondary,
+            padding: '4px 10px',
+            fontSize: '10px',
+            fontWeight: 'bold',
+            border: `1.5px solid ${colors.border}`,
+            borderRadius: '20px',
+            textTransform: 'uppercase',
           }"
         >
-          <div :style="{ textAlign: 'left' }">
-            <div :style="{ fontSize: '12px', fontWeight: 'bold' }">
-              {{ recipe.prep_time ?? "_ " }}m
-            </div>
-            <div
-              :style="{
-                fontSize: '8px',
-                color: colors.neutral600,
-                textTransform: 'uppercase',
-                fontWeight: 'bold',
-              }"
-            >
-              Préparation
-            </div>
+          {{ recipe.category?.name || "Miam !" }}
+        </span>
+
+        <h1
+          :style="{
+            fontSize: '32px',
+            lineHeight: '1',
+            margin: '15px 0',
+            fontFamily: 'Georgia, serif',
+            fontWeight: '900',
+          }"
+        >
+          {{ recipe.name }}
+        </h1>
+
+        <div :style="{ display: 'flex', gap: '10px' }">
+          <div class="info-badge">
+            <Timer :size="14" /> {{ recipe.prep_time }}m
           </div>
-
-          <div
-            :style="{
-              width: '1px',
-              height: '20px',
-              backgroundColor: '#d4d4d4',
-            }"
-          />
-
-          <div :style="{ textAlign: 'left' }">
-            <div :style="{ fontSize: '12px', fontWeight: 'bold' }">
-              {{ recipe.cook_time ?? "_ " }}m
-            </div>
-            <div
-              :style="{
-                fontSize: '8px',
-                color: colors.neutral600,
-                textTransform: 'uppercase',
-                fontWeight: 'bold',
-              }"
-            >
-              Cuisson
-            </div>
-          </div>
-
-          <div
-            :style="{
-              width: '1px',
-              height: '20px',
-              backgroundColor: '#d4d4d4',
-            }"
-          />
-
-          <div :style="{ textAlign: 'left' }">
-            <div :style="{ fontSize: '12px', fontWeight: 'bold' }">
-              {{ recipe.servings ?? "_ " }}
-            </div>
-            <div
-              :style="{
-                fontSize: '8px',
-                color: colors.neutral600,
-                textTransform: 'uppercase',
-                fontWeight: 'bold',
-              }"
-            >
-              Pers.
-            </div>
+          <div class="info-badge">
+            <Users :size="14" /> {{ recipe.servings }} pers.
           </div>
         </div>
       </div>
     </header>
 
-    <div :style="{ display: 'flex', gap: '30px', flex: 1, minHeight: 0 }">
-      <div :style="{ width: '160px', flexShrink: 0 }">
+    <div :style="{ display: 'flex', gap: '25px', flex: 1 }">
+      <aside
+        :style="{
+          width: '180px',
+          backgroundColor: '#fff',
+          border: `2px solid ${colors.border}`,
+          borderRadius: '15px',
+          padding: '15px',
+          height: 'fit-content',
+        }"
+      >
         <h2
           :style="{
-            fontSize: '12px',
-            fontWeight: '900',
-            textTransform: 'uppercase',
-            marginBottom: '12px',
+            fontSize: '16px',
+            marginBottom: '10px',
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
+            gap: '8px',
           }"
         >
-          <Utensils :size="12" :stroke-width="3" /> Ingrédients
+          <Utensils :size="16" /> Ingrédients
         </h2>
-        <div
+        <ul
           :style="{
-            backgroundColor: colors.accent,
-            padding: '12px',
-            borderRadius: '12px',
-            border: '1px solid #ffedd5',
+            listStyle: 'none',
+            padding: 0,
+            margin: 0,
+            fontFamily: 'sans-serif',
           }"
         >
-          <ul :style="{ listStyle: 'none', padding: 0, margin: 0 }">
-            <li
-              v-for="(ing, i) in recipe.ingredients"
-              :key="i"
-              :style="{
-                fontSize: '12px',
-                lineHeight: '1.4',
-                padding: '6px 0',
-                borderBottom:
-                  i === recipe.ingredients.length - 1
-                    ? 'none'
-                    : '1px solid #fed7aa',
-                color: colors.neutral600,
-              }"
-            >
-              • {{ ing }}
-            </li>
-          </ul>
-        </div>
-      </div>
+          <li
+            v-for="(ing, i) in recipe.ingredients"
+            :key="i"
+            :style="{
+              fontSize: '11px',
+              padding: '5px 0',
+              borderBottom: '1px dashed #ccc',
+              color: '#444',
+            }"
+          >
+            {{ ing }}
+          </li>
+        </ul>
+      </aside>
 
-      <div :style="{ flex: 1 }">
+      <main :style="{ flex: 1 }">
         <h2
           :style="{
-            fontSize: '12px',
-            fontWeight: '900',
-            textTransform: 'uppercase',
-            marginBottom: '12px',
+            fontSize: '18px',
+            marginBottom: '15px',
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
+            gap: '8px',
           }"
         >
-          <ChefHat :size="12" :stroke-width="3" /> Préparation
+          <ChefHat :size="18" /> Préparation
         </h2>
-        <div
-          :style="{ display: 'flex', flexDirection: 'column', gap: stepGap }"
-        >
+        <div :style="{ display: 'flex', flexDirection: 'column', gap: '15px' }">
           <div
             v-for="(step, i) in recipe.steps"
             :key="i"
-            :style="{ display: 'flex', gap: '12px' }"
+            :style="{ display: 'flex', gap: '15px' }"
           >
-            <span
+            <div
               :style="{
-                fontSize: stepFontSize,
-                fontWeight: '900',
-                color: colors.orange,
-                minWidth: '20px',
+                minWidth: '28px',
+                height: '28px',
+                backgroundColor: colors.primary,
+                color: 'white',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '14px',
+                fontWeight: 'bold',
+                border: `2px solid ${colors.border}`,
+                flexShrink: 0,
               }"
             >
-              {{ i + 1 }}.
-            </span>
+              {{ i + 1 }}
+            </div>
             <p
               :style="{
-                fontSize: stepFontSize,
+                fontSize: '12px',
                 margin: 0,
-                lineHeight: '1.5',
-                color: colors.neutral600,
+                lineHeight: '1.4',
+                fontFamily: 'sans-serif',
+                color: '#333',
               }"
             >
               {{ step }}
             </p>
           </div>
         </div>
-      </div>
+      </main>
     </div>
+
+    <div
+      :style="{
+        position: 'absolute',
+        bottom: '-20px',
+        right: '-20px',
+        width: '100px',
+        height: '100px',
+        backgroundColor: colors.secondary,
+        borderRadius: '50%',
+        opacity: 0.5,
+        zIndex: 0,
+      }"
+    ></div>
   </div>
 </template>
 
-<style>
+<style scoped>
+.info-badge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: sans-serif;
+  font-size: 11px;
+  font-weight: bold;
+  background: white;
+  padding: 5px 10px;
+  border: 1.5px solid #1a1a1a;
+  border-radius: 8px;
+}
+
 .pdf-page-container::before {
   content: "";
-  absolute: inset 0;
-  background-image: url("https://www.transparenttextures.com/patterns/paper-fibers.png");
-  opacity: 0.05;
+  position: absolute;
+  inset: 0;
+  background-image: url("https://www.transparenttextures.com/patterns/natural-paper.png");
+  opacity: 0.4;
   pointer-events: none;
 }
 </style>
